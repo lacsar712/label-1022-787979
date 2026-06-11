@@ -164,6 +164,18 @@ export const collaborationsApi = {
   getContentTypes: () => api.get('/collaborations/content-types')
 };
 
+// Budgets API - 季度预算管理
+export const budgetsApi = {
+  getList: (params) => api.get('/budgets', { params }),
+  getOverview: (params) => api.get('/budgets/overview', { params }),
+  getPlatforms: () => api.get('/budgets/platforms'),
+  getById: (id) => api.get(`/budgets/${id}`),
+  create: (data) => api.post('/budgets', data),
+  update: (id, data) => api.put(`/budgets/${id}`, data),
+  delete: (id) => api.delete(`/budgets/${id}`),
+  checkBudget: (data) => api.post('/budgets/check', data)
+};
+
 // Statistics API
 export const statisticsApi = {
   getOverview: () => api.get('/statistics/overview'),

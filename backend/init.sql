@@ -116,6 +116,23 @@ CREATE TABLE IF NOT EXISTS collaborations (
     FOREIGN KEY (user_id) REFERENCES users(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Platform Budgets table - 季度预算管理表
+CREATE TABLE IF NOT EXISTS platform_budgets (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    year INT NOT NULL,
+    quarter INT NOT NULL,
+    platform VARCHAR(50) NOT NULL,
+    budget_limit DECIMAL(12, 2) NOT NULL DEFAULT 0,
+    warning_threshold DECIMAL(5, 2) DEFAULT 80,
+    user_id INT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_year_quarter (year, quarter),
+    INDEX idx_platform (platform),
+    UNIQUE KEY uq_year_quarter_platform (year, quarter, platform),
+    FOREIGN KEY (user_id) REFERENCES users(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Insert initial roles
 INSERT INTO roles (id, name, description, permissions) VALUES
 (1, 'admin', '管理员', 'all'),
@@ -189,3 +206,21 @@ INSERT INTO platform_accounts (influencer_id, platform, account_id, followers, i
 (9, '快手', 'funnyking_ks', 1800000, FALSE),
 (9, 'B站', 'funnyking_b', 950000, FALSE),
 (10, '微信', 'skinexpert', 280000, TRUE);
+
+-- Insert sample platform budgets - 2025年Q1预算
+INSERT INTO platform_budgets (year, quarter, platform, budget_limit, warning_threshold, user_id) VALUES
+(2025, 1, '小红书', 200000.00, 80, 1),
+(2025, 1, '抖音', 500000.00, 80, 1),
+(2025, 1, 'B站', 300000.00, 80, 1),
+(2025, 1, '微博', 250000.00, 80, 1),
+(2025, 1, '快手', 150000.00, 80, 1),
+(2025, 1, '微信', 100000.00, 80, 1);
+
+-- Insert sample platform budgets - 2025年Q2预算
+INSERT INTO platform_budgets (year, quarter, platform, budget_limit, warning_threshold, user_id) VALUES
+(2025, 2, '小红书', 250000.00, 80, 1),
+(2025, 2, '抖音', 600000.00, 80, 1),
+(2025, 2, 'B站', 350000.00, 80, 1),
+(2025, 2, '微博', 300000.00, 80, 1),
+(2025, 2, '快手', 180000.00, 80, 1),
+(2025, 2, '微信', 120000.00, 80, 1);

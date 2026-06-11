@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { collaborationsApi, influencersApi } from '../../api';
+import { collaborationsApi, influencersApi, budgetsApi } from '../../api';
 import { useAuth, isOperator } from '../../contexts/AuthContext';
 import { showToast } from '../../components/Toast';
 import Modal from '../../components/Modal';
@@ -36,6 +36,10 @@ const CollaborationList = () => {
   const [formData, setFormData] = useState({});
   const [formErrors, setFormErrors] = useState({});
   const [saving, setSaving] = useState(false);
+  
+  // Budget Check
+  const [budgetCheck, setBudgetCheck] = useState(null);
+  const [checkingBudget, setCheckingBudget] = useState(false);
   
   // Delete
   const [deleteId, setDeleteId] = useState(null);
@@ -106,9 +110,38 @@ const CollaborationList = () => {
     setPage(1);
   };
 
+  const checkBudget = useCallback(async (data) => {
+    const selectedInfluencer = influencers.find(i => i.id === parseInt(data.influencer_id));
+    if (!selectedInfluencer || !data.budget) {
+      setBudgetCheck(null);
+      return;
+    }
+
+    try {
+      setCheckingBudget(true);
+      const result = await budgetsApi.checkBudget({
+        platform: selectedInfluencer.platform,
+        budget: parseFloat(data.budget) || 0,
+        start_date: data.start_date || null,
+        collaboration_id: editingId || null
+      });
+      setBudgetCheck(result);
+    } catch (error) {
+      setBudgetCheck(null);
+    } finally {
+      setCheckingBudget(false);
+    }
+  }, [influencers, editingId]);
+
+  const updateFormData = useCallback((updates) => {
+    const newData = { ...formData, ...updates };
+    setFormData(newData);
+    checkBudget(newData);
+  }, [formData, checkBudget]);
+
   const openCreateModal = () => {
     setEditingId(null);
-    setFormData({
+    const initialData = {
       influencer_id: '',
       project_name: '',
       status: 'pending',
@@ -120,15 +153,17 @@ const CollaborationList = () => {
       content_requirements: '',
       deliverables: '',
       notes: ''
-    });
+    };
+    setFormData(initialData);
     setFormErrors({});
+    setBudgetCheck(null);
     setShowModal(true);
   };
   
   // Open create modal with pre-selected influencer (from Influencer Detail page)
   const openCreateModalWithInfluencer = (influencer) => {
     setEditingId(null);
-    setFormData({
+    const initialData = {
       influencer_id: influencer.id,
       project_name: '',
       status: 'pending',
@@ -140,16 +175,18 @@ const CollaborationList = () => {
       content_requirements: '',
       deliverables: '',
       notes: ''
-    });
+    };
+    setFormData(initialData);
     setFormErrors({});
+    setBudgetCheck(null);
     setShowModal(true);
+    setTimeout(() => checkBudget(initialData), 100);
   };
 
   const openEditModal = async (id) => {
     try {
       const data = await collaborationsApi.getById(id);
-      setEditingId(id);
-      setFormData({
+      const initialData = {
         influencer_id: data.influencer_id,
         project_name: data.project_name || '',
         status: data.status || 'pending',
@@ -165,9 +202,13 @@ const CollaborationList = () => {
         comments: data.comments || 0,
         shares: data.shares || 0,
         notes: data.notes || ''
-      });
+      };
+      setEditingId(id);
+      setFormData(initialData);
       setFormErrors({});
+      setBudgetCheck(null);
       setShowModal(true);
+      setTimeout(() => checkBudget(initialData), 100);
     } catch (error) {
       // Handled by interceptor
     }
@@ -435,7 +476,7 @@ const CollaborationList = () => {
             type="text"
             className="form-input"
             value={formData.project_name || ''}
-            onChange={(e) => setFormData({ ...formData, project_name: e.target.value })}
+            onChange={(e) => updateFormData({ project_name: e.target.value })}
           />
           {formErrors.project_name && <div className="form-error">{formErrors.project_name}</div>}
         </div>
@@ -446,7 +487,7 @@ const CollaborationList = () => {
             <select
               className="form-select"
               value={formData.influencer_id || ''}
-              onChange={(e) => setFormData({ ...formData, influencer_id: e.target.value })}
+              onChange={(e) => updateFormData({ influencer_id: e.target.value })}
             >
               <option value="">请选择Influencer</option>
               {influencers.map(i => (
@@ -460,7 +501,7 @@ const CollaborationList = () => {
             <select
               className="form-select"
               value={formData.status || ''}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+              onChange={(e) => updateFormData({ status: e.target.value })}
             >
               {statuses.map(s => (
                 <option key={s.value} value={s.value}>{s.label}</option>
@@ -477,7 +518,7 @@ const CollaborationList = () => {
               type="number"
               className="form-input"
               value={formData.budget || 0}
-              onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
+              onChange={(e) => updateFormData({ budget: e.target.value })}
             />
           </div>
           <div className="form-group">
@@ -486,7 +527,7 @@ const CollaborationList = () => {
               type="number"
               className="form-input"
               value={formData.actual_cost || 0}
-              onChange={(e) => setFormData({ ...formData, actual_cost: e.target.value })}
+              onChange={(e) => updateFormData({ actual_cost: e.target.value })}
             />
           </div>
         </div>
@@ -498,7 +539,7 @@ const CollaborationList = () => {
               type="date"
               className="form-input"
               value={formData.start_date || ''}
-              onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+              onChange={(e) => updateFormData({ start_date: e.target.value })}
             />
           </div>
           <div className="form-group">
@@ -507,7 +548,7 @@ const CollaborationList = () => {
               type="date"
               className="form-input"
               value={formData.end_date || ''}
-              onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
+              onChange={(e) => updateFormData({ end_date: e.target.value })}
             />
           </div>
         </div>
@@ -518,7 +559,7 @@ const CollaborationList = () => {
             <select
               className="form-select"
               value={formData.content_type || ''}
-              onChange={(e) => setFormData({ ...formData, content_type: e.target.value })}
+              onChange={(e) => updateFormData({ content_type: e.target.value })}
             >
               <option value="">请选择类型</option>
               {contentTypes.map(c => (
@@ -534,9 +575,51 @@ const CollaborationList = () => {
             className="form-textarea"
             style={{ minHeight: '80px' }}
             value={formData.content_requirements || ''}
-            onChange={(e) => setFormData({ ...formData, content_requirements: e.target.value })}
+            onChange={(e) => updateFormData({ content_requirements: e.target.value })}
           />
         </div>
+
+        {/* Budget Warning Alert */}
+        {budgetCheck && (
+          <div 
+            className={`budget-alert ${budgetCheck.will_exceed ? 'alert-danger' : budgetCheck.will_warn ? 'alert-warning' : 'alert-info'}`}
+            style={{
+              padding: '12px 16px',
+              borderRadius: '8px',
+              marginTop: '16px',
+              marginBottom: '8px',
+              border: '1px solid',
+              whiteSpace: 'pre-line',
+              fontSize: '13px',
+              lineHeight: '1.6',
+              backgroundColor: budgetCheck.will_exceed ? '#fef2f2' : budgetCheck.will_warn ? '#fffbeb' : '#f0f9ff',
+              borderColor: budgetCheck.will_exceed ? '#fecaca' : budgetCheck.will_warn ? '#fde68a' : '#bae6fd',
+              color: budgetCheck.will_exceed ? '#991b1b' : budgetCheck.will_warn ? '#92400e' : '#075985'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+              <span style={{ fontSize: '18px' }}>
+                {budgetCheck.will_exceed ? '🚨' : budgetCheck.will_warn ? '⚠️' : 'ℹ️'}
+              </span>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: '600', marginBottom: '4px' }}>
+                  {budgetCheck.will_exceed ? '预算超支预警' : budgetCheck.will_warn ? '预算使用率预警' : '预算使用情况'}
+                </div>
+                <div>{budgetCheck.message}</div>
+                <div style={{ 
+                  display: 'flex', 
+                  gap: '16px', 
+                  marginTop: '8px', 
+                  fontSize: '12px', 
+                  opacity: 0.85 
+                }}>
+                  <span>季度: {budgetCheck.year}年Q{budgetCheck.quarter}</span>
+                  <span>平台: {budgetCheck.platform}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {editingId && (
           <>
@@ -550,7 +633,7 @@ const CollaborationList = () => {
                   type="number"
                   className="form-input"
                   value={formData.views || 0}
-                  onChange={(e) => setFormData({ ...formData, views: e.target.value })}
+                  onChange={(e) => updateFormData({ views: e.target.value })}
                 />
               </div>
               <div className="form-group">
@@ -559,7 +642,7 @@ const CollaborationList = () => {
                   type="number"
                   className="form-input"
                   value={formData.likes || 0}
-                  onChange={(e) => setFormData({ ...formData, likes: e.target.value })}
+                  onChange={(e) => updateFormData({ likes: e.target.value })}
                 />
               </div>
             </div>
@@ -570,7 +653,7 @@ const CollaborationList = () => {
                   type="number"
                   className="form-input"
                   value={formData.comments || 0}
-                  onChange={(e) => setFormData({ ...formData, comments: e.target.value })}
+                  onChange={(e) => updateFormData({ comments: e.target.value })}
                 />
               </div>
               <div className="form-group">
@@ -579,7 +662,7 @@ const CollaborationList = () => {
                   type="number"
                   className="form-input"
                   value={formData.shares || 0}
-                  onChange={(e) => setFormData({ ...formData, shares: e.target.value })}
+                  onChange={(e) => updateFormData({ shares: e.target.value })}
                 />
               </div>
             </div>

@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard';
 import InfluencerList from './pages/Influencer/List';
 import InfluencerDetail from './pages/Influencer/Detail';
 import CollaborationList from './pages/Collaboration/List';
+import BudgetList from './pages/Budget/List';
 import CategoryList from './pages/Category/List';
 import UserList from './pages/User/List';
 import Profile from './pages/Profile';
@@ -67,6 +68,11 @@ const AppRoutes = () => {
         <Route path="influencers" element={<InfluencerList />} />
         <Route path="influencers/:id" element={<InfluencerDetail />} />
         <Route path="collaborations" element={<CollaborationList />} />
+        <Route path="budgets" element={
+          <ProtectedRoute roles={['admin', 'operator']}>
+            <BudgetList />
+          </ProtectedRoute>
+        } />
         <Route path="categories" element={
           <ProtectedRoute roles={['admin', 'operator']}>
             <CategoryList />

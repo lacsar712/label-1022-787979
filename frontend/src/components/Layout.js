@@ -36,6 +36,7 @@ const Layout = () => {
     if (path === '/dashboard') return '仪表盘';
     if (path.startsWith('/influencers')) return 'Influencer管理';
     if (path.startsWith('/collaborations')) return '合作管理';
+    if (path.startsWith('/budgets')) return '季度预算规划';
     if (path.startsWith('/categories')) return '分类管理';
     if (path.startsWith('/users')) return '用户管理';
     if (path.startsWith('/profile')) return '个人中心';
@@ -54,6 +55,7 @@ const Layout = () => {
       items: [
         { path: '/influencers', icon: '👤', label: 'Influencer管理', roles: ['admin', 'operator', 'user'] },
         { path: '/collaborations', icon: '🤝', label: '合作管理', roles: ['admin', 'operator', 'user'] },
+        { path: '/budgets', icon: '💰', label: '季度预算规划', roles: ['admin', 'operator'] },
         { path: '/categories', icon: '📁', label: '分类管理', roles: ['admin', 'operator'] }
       ]
     },
