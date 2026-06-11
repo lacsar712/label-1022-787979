@@ -7,6 +7,17 @@ from datetime import datetime, date
 from decimal import Decimal
 
 
+class ReviewBrief(BaseModel):
+    id: int
+    content_quality: int
+    cooperation_level: int
+    delivery_effect: int
+    comment: Optional[str] = None
+    
+    class Config:
+        from_attributes = True
+
+
 class CollaborationBase(BaseModel):
     influencer_id: int
     project_name: str = Field(..., min_length=1, max_length=200)
@@ -92,6 +103,7 @@ class CollaborationResponse(BaseModel):
     updated_at: Optional[datetime] = None
     influencer: Optional[InfluencerBrief] = None
     creator: Optional[UserBrief] = None
+    review: Optional[ReviewBrief] = None
     
     class Config:
         from_attributes = True

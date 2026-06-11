@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { collaborationsApi, influencersApi, budgetsApi } from '../../api';
+import { collaborationsApi, influencersApi, budgetsApi, collaborationReviewsApi } from '../../api';
 import { useAuth, isOperator } from '../../contexts/AuthContext';
 import { showToast } from '../../components/Toast';
 import Modal from '../../components/Modal';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import Pagination from '../../components/Pagination';
+import ReviewModal from '../../components/ReviewModal';
 
 const CollaborationList = () => {
   const { user } = useAuth();
@@ -44,6 +45,10 @@ const CollaborationList = () => {
   // Delete
   const [deleteId, setDeleteId] = useState(null);
   const [deleting, setDeleting] = useState(false);
+
+  // Review
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewingCollaboration, setReviewingCollaboration] = useState(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -275,6 +280,15 @@ const CollaborationList = () => {
     }
   };
 
+  const openReviewModal = (item) => {
+    setReviewingCollaboration(item);
+    setShowReviewModal(true);
+  };
+
+  const handleReviewSuccess = () => {
+    fetchData();
+  };
+
   const formatMoney = (num) => {
     return '¥' + (num?.toLocaleString() || '0');
   };
@@ -416,7 +430,7 @@ const CollaborationList = () => {
                         </div>
                       </td>
                       <td>
-                        <div style={{ display: 'flex', gap: '8px' }}>
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                           <button 
                             className="btn btn-ghost btn-sm"
                             onClick={() => openEditModal(item.id)}
@@ -424,6 +438,15 @@ const CollaborationList = () => {
                           >
                             {canEdit || user.id === item.user_id ? '编辑' : '查看'}
                           </button>
+                          {item.status === 'completed' && (
+                            <button 
+                              className="btn btn-ghost btn-sm"
+                              style={{ color: 'var(--primary-color)' }}
+                              onClick={() => openReviewModal(item)}
+                            >
+                              {item.review ? '查看评价' : '去评价'}
+                            </button>
+                          )}
                           {canEdit && (
                             <button 
                               className="btn btn-ghost btn-sm"
@@ -679,6 +702,14 @@ const CollaborationList = () => {
         message="确定要删除这个合作记录吗？此操作不可恢复。"
         type="danger"
         loading={deleting}
+      />
+
+      {/* Review Modal */}
+      <ReviewModal
+        isOpen={showReviewModal}
+        onClose={() => setShowReviewModal(false)}
+        collaboration={reviewingCollaboration}
+        onSuccess={handleReviewSuccess}
       />
     </div>
   );

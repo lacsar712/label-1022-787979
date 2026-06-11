@@ -33,3 +33,4 @@ class Influencer(Base):
     category = relationship("Category", back_populates="influencers")
     collaborations = relationship("Collaboration", back_populates="influencer")
     platform_accounts = relationship("PlatformAccount", back_populates="influencer", cascade="all, delete-orphan")
+    reviews = relationship("CollaborationReview", back_populates="influencer")

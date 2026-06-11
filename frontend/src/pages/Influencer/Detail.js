@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { influencersApi, collaborationsApi } from '../../api';
+import { influencersApi, collaborationsApi, collaborationReviewsApi } from '../../api';
 import { useAuth, isOperator } from '../../contexts/AuthContext';
 import { showToast } from '../../components/Toast';
 import Modal from '../../components/Modal';
 import ConfirmDialog from '../../components/ConfirmDialog';
+import StarRating from '../../components/StarRating';
+import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip } from 'recharts';
 
 const InfluencerDetail = () => {
   const { id } = useParams();
@@ -16,6 +18,8 @@ const InfluencerDetail = () => {
   const [influencer, setInfluencer] = useState(null);
   const [collaborations, setCollaborations] = useState([]);
   const [platforms, setPlatforms] = useState([]);
+  const [reviewSummary, setReviewSummary] = useState(null);
+  const [reviews, setReviews] = useState([]);
 
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [editingAccount, setEditingAccount] = useState(null);
@@ -43,12 +47,16 @@ const InfluencerDetail = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [infData, collabData] = await Promise.all([
+      const [infData, collabData, reviewSummaryData, reviewsData] = await Promise.all([
         influencersApi.getById(id),
-        collaborationsApi.getList({ influencer_id: id, page_size: 50 })
+        collaborationsApi.getList({ influencer_id: id, page_size: 50 }),
+        collaborationReviewsApi.getInfluencerSummary(id).catch(() => null),
+        collaborationReviewsApi.getByInfluencer(id).catch(() => [])
       ]);
       setInfluencer(infData);
       setCollaborations(collabData.items);
+      setReviewSummary(reviewSummaryData);
+      setReviews(reviewsData);
     } catch (error) {
       navigate('/influencers');
     } finally {
@@ -344,7 +352,7 @@ const InfluencerDetail = () => {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px', marginBottom: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', marginBottom: '24px' }}>
         <div className="card">
           <div className="card-header">
             <h3 className="card-title">联系方式</h3>
@@ -416,6 +424,81 @@ const InfluencerDetail = () => {
                 <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>总互动</div>
               </div>
             </div>
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="card-header">
+            <h3 className="card-title">合作评分</h3>
+            <span className="tag tag-primary">{reviewSummary?.total_reviews || 0} 条评价</span>
+          </div>
+          <div className="card-body">
+            {reviewSummary && reviewSummary.total_reviews > 0 ? (
+              <div>
+                <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+                  <span style={{ fontSize: '32px', fontWeight: '700', color: 'var(--primary-color)' }}>
+                    {reviewSummary.avg_overall.toFixed(1)}
+                  </span>
+                  <span style={{ color: 'var(--text-secondary)', marginLeft: '4px' }}>/ 5.0</span>
+                  <div style={{ marginTop: '4px' }}>
+                    <StarRating value={Math.round(reviewSummary.avg_overall)} readonly size="small" />
+                  </div>
+                </div>
+                <div style={{ height: '180px' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RadarChart data={[
+                      { dimension: '内容质量', value: reviewSummary.avg_content_quality, fullMark: 5 },
+                      { dimension: '配合程度', value: reviewSummary.avg_cooperation_level, fullMark: 5 },
+                      { dimension: '投放效果', value: reviewSummary.avg_delivery_effect, fullMark: 5 }
+                    ]}>
+                      <PolarGrid stroke="#e5e7eb" />
+                      <PolarAngleAxis dataKey="dimension" tick={{ fill: 'var(--text-secondary)', fontSize: 12 }} />
+                      <PolarRadiusAxis angle={90} domain={[0, 5]} tick={false} axisLine={false} />
+                      <Radar
+                        name="评分"
+                        dataKey="value"
+                        stroke="var(--primary-color)"
+                        fill="var(--primary-color)"
+                        fillOpacity={0.3}
+                      />
+                      <Tooltip
+                        formatter={(value) => [`${value.toFixed(1)} 分`, '评分']}
+                        contentStyle={{ borderRadius: '8px', border: '1px solid var(--border-color)' }}
+                      />
+                    </RadarChart>
+                  </ResponsiveContainer>
+                </div>
+                <div style={{ display: 'grid', gap: '8px', marginTop: '12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>内容质量</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <StarRating value={Math.round(reviewSummary.avg_content_quality)} readonly size="small" />
+                      <span style={{ fontSize: '12px', fontWeight: '500' }}>{reviewSummary.avg_content_quality.toFixed(1)}</span>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>配合程度</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <StarRating value={Math.round(reviewSummary.avg_cooperation_level)} readonly size="small" />
+                      <span style={{ fontSize: '12px', fontWeight: '500' }}>{reviewSummary.avg_cooperation_level.toFixed(1)}</span>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>投放效果</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <StarRating value={Math.round(reviewSummary.avg_delivery_effect)} readonly size="small" />
+                      <span style={{ fontSize: '12px', fontWeight: '500' }}>{reviewSummary.avg_delivery_effect.toFixed(1)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="empty-state" style={{ padding: '24px 0' }}>
+                <div className="empty-icon">⭐</div>
+                <div className="empty-title">暂无评价</div>
+                <div className="empty-description">完成合作后可进行评价</div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -498,6 +581,72 @@ const InfluencerDetail = () => {
                 ))}
               </tbody>
             </table>
+          )}
+        </div>
+      </div>
+
+      <div className="card" style={{ marginTop: '24px' }}>
+        <div className="card-header">
+          <h3 className="card-title">历史评价</h3>
+          <span className="tag tag-gray">共 {reviews.length} 条</span>
+        </div>
+        <div className="card-body" style={{ padding: 0 }}>
+          {reviews.length === 0 ? (
+            <div className="empty-state" style={{ padding: '32px' }}>
+              <div className="empty-icon">⭐</div>
+              <div className="empty-title">暂无历史评价</div>
+              <div className="empty-description">完成合作后可对网红进行评价</div>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gap: '16px', padding: '16px' }}>
+              {reviews.map(review => (
+                <div key={review.id} className="review-item">
+                  <div className="review-item-header">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div className="avatar avatar-sm">
+                        {review.reviewer?.nickname?.[0] || review.reviewer?.username?.[0] || '?'}
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: '500' }}>
+                          {review.reviewer?.nickname || review.reviewer?.username}
+                        </div>
+                        <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                          {new Date(review.created_at).toLocaleDateString()}
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span style={{ fontSize: '18px', fontWeight: '700', color: 'var(--primary-color)' }}>
+                        {((review.content_quality + review.cooperation_level + review.delivery_effect) / 3).toFixed(1)}
+                      </span>
+                      <StarRating value={Math.round((review.content_quality + review.cooperation_level + review.delivery_effect) / 3)} readonly size="small" />
+                    </div>
+                  </div>
+                  <div className="review-item-ratings">
+                    <div className="review-item-rating">
+                      <span className="review-item-rating-label">内容质量</span>
+                      <StarRating value={review.content_quality} readonly size="small" />
+                      <span className="review-item-rating-value">{review.content_quality}.0</span>
+                    </div>
+                    <div className="review-item-rating">
+                      <span className="review-item-rating-label">配合程度</span>
+                      <StarRating value={review.cooperation_level} readonly size="small" />
+                      <span className="review-item-rating-value">{review.cooperation_level}.0</span>
+                    </div>
+                    <div className="review-item-rating">
+                      <span className="review-item-rating-label">投放效果</span>
+                      <StarRating value={review.delivery_effect} readonly size="small" />
+                      <span className="review-item-rating-value">{review.delivery_effect}.0</span>
+                    </div>
+                  </div>
+                  {review.comment && (
+                    <div className="review-item-comment">
+                      {review.comment}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           )}
         </div>
       </div>

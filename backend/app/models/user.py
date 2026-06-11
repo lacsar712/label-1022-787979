@@ -37,3 +37,4 @@ class User(Base):
     
     role = relationship("Role", back_populates="users")
     collaborations = relationship("Collaboration", back_populates="creator")
+    reviews = relationship("CollaborationReview", back_populates="reviewer")

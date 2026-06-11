@@ -133,6 +133,29 @@ CREATE TABLE IF NOT EXISTS platform_budgets (
     FOREIGN KEY (user_id) REFERENCES users(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Collaboration Reviews table - 合作评价表
+CREATE TABLE IF NOT EXISTS collaboration_reviews (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    collaboration_id INT NOT NULL UNIQUE,
+    influencer_id INT NOT NULL,
+    user_id INT NOT NULL,
+    content_quality INT NOT NULL,
+    cooperation_level INT NOT NULL,
+    delivery_effect INT NOT NULL,
+    comment TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_collaboration (collaboration_id),
+    INDEX idx_influencer (influencer_id),
+    INDEX idx_user (user_id),
+    FOREIGN KEY (collaboration_id) REFERENCES collaborations(id),
+    FOREIGN KEY (influencer_id) REFERENCES influencers(id),
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    CONSTRAINT check_content_quality CHECK (content_quality >= 1 AND content_quality <= 5),
+    CONSTRAINT check_cooperation_level CHECK (cooperation_level >= 1 AND cooperation_level <= 5),
+    CONSTRAINT check_delivery_effect CHECK (delivery_effect >= 1 AND delivery_effect <= 5)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Insert initial roles
 INSERT INTO roles (id, name, description, permissions) VALUES
 (1, 'admin', '管理员', 'all'),
@@ -224,3 +247,10 @@ INSERT INTO platform_budgets (year, quarter, platform, budget_limit, warning_thr
 (2025, 2, '微博', 300000.00, 80, 1),
 (2025, 2, '快手', 180000.00, 80, 1),
 (2025, 2, '微信', 120000.00, 80, 1);
+
+-- Insert sample collaboration reviews - 示例合作评价
+INSERT INTO collaboration_reviews (collaboration_id, influencer_id, user_id, content_quality, cooperation_level, delivery_effect, comment) VALUES
+(1, 1, 2, 5, 4, 4, '内容质量很高，图文制作精美，产品展示到位。网红配合度也不错，能够按时交付。投放效果超出预期，转化很不错。'),
+(3, 3, 2, 4, 5, 5, 'B站视频制作非常用心，探店内容真实有趣，观众反馈很好。网红非常配合，主动提出创意想法。曝光量和互动率都远超预期。'),
+(6, 6, 2, 5, 5, 4, '母婴领域专业度很高，种草笔记很真实，用户信任感强。沟通顺畅，交付及时。整体效果不错，带来了不少精准用户。'),
+(8, 8, 1, 4, 4, 5, '知识分享内容质量高，品牌植入自然不生硬。合作过程很愉快，网红专业且负责。视频播放量和转化效果都很好。');

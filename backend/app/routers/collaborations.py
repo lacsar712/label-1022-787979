@@ -43,7 +43,8 @@ async def get_collaborations(
     """
     query = db.query(Collaboration).options(
         joinedload(Collaboration.influencer),
-        joinedload(Collaboration.creator)
+        joinedload(Collaboration.creator),
+        joinedload(Collaboration.review)
     )
     
     # Apply filters
@@ -118,7 +119,8 @@ async def create_collaboration(
     # Reload with relations
     new_collaboration = db.query(Collaboration).options(
         joinedload(Collaboration.influencer),
-        joinedload(Collaboration.creator)
+        joinedload(Collaboration.creator),
+        joinedload(Collaboration.review)
     ).filter(Collaboration.id == new_collaboration.id).first()
     
     logger.info(f"Collaboration created: {new_collaboration.project_name} by {current_user.username}")
@@ -161,7 +163,8 @@ async def get_collaboration(
     """获取合作详情"""
     collaboration = db.query(Collaboration).options(
         joinedload(Collaboration.influencer),
-        joinedload(Collaboration.creator)
+        joinedload(Collaboration.creator),
+        joinedload(Collaboration.review)
     ).filter(Collaboration.id == collaboration_id).first()
     
     if not collaboration:
@@ -217,7 +220,8 @@ async def update_collaboration(
     # Reload with relations
     collaboration = db.query(Collaboration).options(
         joinedload(Collaboration.influencer),
-        joinedload(Collaboration.creator)
+        joinedload(Collaboration.creator),
+        joinedload(Collaboration.review)
     ).filter(Collaboration.id == collaboration_id).first()
     
     logger.info(f"Collaboration updated: {collaboration.project_name} by {current_user.username}")
@@ -247,7 +251,8 @@ async def update_collaboration_status(
     # Reload with relations
     collaboration = db.query(Collaboration).options(
         joinedload(Collaboration.influencer),
-        joinedload(Collaboration.creator)
+        joinedload(Collaboration.creator),
+        joinedload(Collaboration.review)
     ).filter(Collaboration.id == collaboration_id).first()
     
     logger.info(f"Collaboration status updated: {collaboration.project_name} to {status_data.status} by {current_user.username}")

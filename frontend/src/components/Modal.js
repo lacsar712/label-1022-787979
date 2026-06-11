@@ -9,11 +9,11 @@ const Modal = ({ isOpen, onClose, title, children, footer, size = 'default' }) =
     }
   };
 
-  const sizeClass = size === 'large' ? 'modal-large' : '';
+  const sizeClass = size === 'large' ? 'modal-large' : size === 'medium' ? 'modal-medium' : '';
 
   return (
     <div className="modal-overlay" onClick={handleOverlayClick}>
-      <div className={`modal ${sizeClass}`} style={size === 'large' ? { maxWidth: '800px' } : {}}>
+      <div className={`modal ${sizeClass}`} style={size === 'large' ? { maxWidth: '800px' } : size === 'medium' ? { maxWidth: '560px' } : {}}>
         <div className="modal-header">
           <h3 className="modal-title">{title}</h3>
           <button className="modal-close" onClick={onClose}>

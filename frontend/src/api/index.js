@@ -164,6 +164,16 @@ export const collaborationsApi = {
   getContentTypes: () => api.get('/collaborations/content-types')
 };
 
+// Collaboration Reviews API - 合作评价
+export const collaborationReviewsApi = {
+  create: (data) => api.post('/collaboration-reviews', data),
+  getByCollaboration: (collaborationId) => api.get(`/collaboration-reviews/collaboration/${collaborationId}`),
+  getByInfluencer: (influencerId) => api.get(`/collaboration-reviews/influencer/${influencerId}`),
+  getInfluencerSummary: (influencerId) => api.get(`/collaboration-reviews/influencer/${influencerId}/summary`),
+  update: (id, data) => api.put(`/collaboration-reviews/${id}`, data),
+  delete: (id) => api.delete(`/collaboration-reviews/${id}`)
+};
+
 // Budgets API - 季度预算管理
 export const budgetsApi = {
   getList: (params) => api.get('/budgets', { params }),

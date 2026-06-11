@@ -33,3 +33,4 @@ class Collaboration(Base):
     
     influencer = relationship("Influencer", back_populates="collaborations")
     creator = relationship("User", back_populates="collaborations")
+    review = relationship("CollaborationReview", back_populates="collaboration", uselist=False)
