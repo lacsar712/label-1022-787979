@@ -24,6 +24,7 @@ class InfluencerBase(BaseModel):
     cost_per_post: Decimal = Decimal('0')
     engagement_rate: Decimal = Decimal('0')
     status: str = "active"
+    province: Optional[str] = None
     notes: Optional[str] = None
     
     @field_validator('contact_email')
@@ -66,6 +67,7 @@ class InfluencerUpdate(BaseModel):
     cost_per_post: Optional[Decimal] = None
     engagement_rate: Optional[Decimal] = None
     status: Optional[str] = None
+    province: Optional[str] = None
     notes: Optional[str] = None
     
     @field_validator('contact_email')
@@ -113,6 +115,7 @@ class InfluencerResponse(BaseModel):
     cost_per_post: Decimal
     engagement_rate: Decimal
     status: str
+    province: Optional[str] = None
     notes: Optional[str] = None
     created_at: datetime
     updated_at: Optional[datetime] = None

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { influencersApi, categoriesApi } from '../../api';
 import { useAuth, isOperator } from '../../contexts/AuthContext';
 import { showToast } from '../../components/Toast';
@@ -10,6 +10,7 @@ import Pagination from '../../components/Pagination';
 const InfluencerList = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const canEdit = isOperator(user);
 
   const [loading, setLoading] = useState(true);
@@ -23,10 +24,12 @@ const InfluencerList = () => {
   const [platform, setPlatform] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [status, setStatus] = useState('');
+  const [province, setProvince] = useState('');
   
   // Options
   const [platforms, setPlatforms] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [provinces, setProvinces] = useState([]);
   
   // Modal
   const [showModal, setShowModal] = useState(false);
@@ -47,6 +50,7 @@ const InfluencerList = () => {
       if (platform) params.platform = platform;
       if (categoryId) params.category_id = categoryId;
       if (status) params.status = status;
+      if (province) params.province = province;
       
       const data = await influencersApi.getList(params);
       setInfluencers(data.items);
@@ -56,16 +60,18 @@ const InfluencerList = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, pageSize, keyword, platform, categoryId, status]);
+  }, [page, pageSize, keyword, platform, categoryId, status, province]);
 
   const fetchOptions = async () => {
     try {
-      const [platformsRes, categoriesRes] = await Promise.all([
+      const [platformsRes, categoriesRes, provincesRes] = await Promise.all([
         influencersApi.getPlatforms(),
-        categoriesApi.getList()
+        categoriesApi.getList(),
+        influencersApi.getProvinces()
       ]);
       setPlatforms(platformsRes);
       setCategories(categoriesRes);
+      setProvinces(provincesRes);
     } catch (error) {
       // Handled by interceptor
     }
@@ -74,6 +80,13 @@ const InfluencerList = () => {
   useEffect(() => {
     fetchOptions();
   }, []);
+
+  useEffect(() => {
+    if (location.state?.province) {
+      setProvince(location.state.province);
+      setPage(1);
+    }
+  }, [location]);
 
   useEffect(() => {
     fetchData();
@@ -89,6 +102,7 @@ const InfluencerList = () => {
     setPlatform('');
     setCategoryId('');
     setStatus('');
+    setProvince('');
     setPage(1);
   };
 
@@ -108,6 +122,7 @@ const InfluencerList = () => {
       cost_per_post: 0,
       engagement_rate: 0,
       status: 'active',
+      province: '',
       notes: ''
     });
     setFormErrors({});
@@ -132,6 +147,7 @@ const InfluencerList = () => {
         cost_per_post: data.cost_per_post || 0,
         engagement_rate: data.engagement_rate || 0,
         status: data.status || 'active',
+        province: data.province || '',
         notes: data.notes || ''
       });
       setFormErrors({});
@@ -166,6 +182,7 @@ const InfluencerList = () => {
       const submitData = {
         ...formData,
         category_id: formData.category_id || null,
+        province: formData.province || null,
         followers: parseInt(formData.followers) || 0,
         cost_per_post: parseFloat(formData.cost_per_post) || 0,
         engagement_rate: parseFloat(formData.engagement_rate) || 0
@@ -283,6 +300,18 @@ const InfluencerList = () => {
               <option value="blacklisted">黑名单</option>
             </select>
             
+            <select 
+              className="form-select" 
+              style={{ width: '120px' }}
+              value={province}
+              onChange={(e) => setProvince(e.target.value)}
+            >
+              <option value="">全部省份</option>
+              {provinces.map(p => (
+                <option key={p.value} value={p.value}>{p.label}</option>
+              ))}
+            </select>
+            
             <button className="btn btn-primary" onClick={handleSearch}>搜索</button>
             <button className="btn btn-secondary" onClick={handleReset}>重置</button>
           </div>
@@ -309,6 +338,7 @@ const InfluencerList = () => {
                   <tr>
                     <th>名称</th>
                     <th>平台</th>
+                    <th>省份</th>
                     <th>粉丝数</th>
                     <th>分类</th>
                     <th>单条报价</th>
@@ -362,6 +392,13 @@ const InfluencerList = () => {
                             </span>
                           )}
                         </div>
+                      </td>
+                      <td>
+                        {inf.province ? (
+                          <span className="tag tag-gray">{inf.province}</span>
+                        ) : (
+                          <span style={{ color: 'var(--text-tertiary)' }}>-</span>
+                        )}
                       </td>
                       <td>{formatNumber(inf.followers)}</td>
                       <td>{inf.category?.name || '-'}</td>
@@ -492,12 +529,38 @@ const InfluencerList = () => {
             />
           </div>
           <div className="form-group">
+            <label className="form-label">省份</label>
+            <select
+              className="form-select"
+              value={formData.province || ''}
+              onChange={(e) => setFormData({ ...formData, province: e.target.value })}
+            >
+              <option value="">请选择省份</option>
+              {provinces.map(p => (
+                <option key={p.value} value={p.value}>{p.label}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+        
+        <div className="form-row">
+          <div className="form-group">
             <label className="form-label">单条报价 (元)</label>
             <input
               type="number"
               className="form-input"
               value={formData.cost_per_post || 0}
               onChange={(e) => setFormData({ ...formData, cost_per_post: e.target.value })}
+            />
+          </div>
+          <div className="form-group">
+            <label className="form-label">互动率 (%)</label>
+            <input
+              type="number"
+              step="0.01"
+              className="form-input"
+              value={formData.engagement_rate || 0}
+              onChange={(e) => setFormData({ ...formData, engagement_rate: e.target.value })}
             />
           </div>
         </div>

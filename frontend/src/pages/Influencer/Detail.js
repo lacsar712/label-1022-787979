@@ -235,6 +235,12 @@ const InfluencerDetail = () => {
                 <span>{influencer.category.name}</span>
               </div>
             )}
+            {influencer.province && (
+              <div className="detail-meta-item">
+                <span>📍</span>
+                <span>{influencer.province}</span>
+              </div>
+            )}
           </div>
 
           <div className="detail-stats">

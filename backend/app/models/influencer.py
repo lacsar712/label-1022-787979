@@ -26,6 +26,7 @@ class Influencer(Base):
     cost_per_post = Column(Numeric(12, 2), default=0)
     engagement_rate = Column(Numeric(5, 2), default=0)
     status = Column(String(20), default="active")
+    province = Column(String(50))
     notes = Column(Text)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())

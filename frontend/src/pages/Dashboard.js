@@ -16,6 +16,7 @@ const Dashboard = () => {
   const [overview, setOverview] = useState(null);
   const [platformData, setPlatformData] = useState([]);
   const [categoryData, setCategoryData] = useState([]);
+  const [provinceData, setProvinceData] = useState([]);
   const [statusData, setStatusData] = useState([]);
   const [trendData, setTrendData] = useState([]);
   const [topInfluencers, setTopInfluencers] = useState([]);
@@ -48,6 +49,7 @@ const Dashboard = () => {
         overviewRes,
         platformRes,
         categoryRes,
+        provinceRes,
         statusRes,
         trendRes,
         topRes,
@@ -56,6 +58,7 @@ const Dashboard = () => {
         statisticsApi.getOverview(),
         statisticsApi.getPlatformDistribution(),
         statisticsApi.getCategoryDistribution(),
+        statisticsApi.getProvinceDistribution(),
         statisticsApi.getCollaborationStatus(),
         statisticsApi.getMonthlyTrends(6),
         statisticsApi.getTopInfluencers({ limit: 5, order_by: 'followers' }),
@@ -65,6 +68,7 @@ const Dashboard = () => {
       setOverview(overviewRes);
       setPlatformData(platformRes);
       setCategoryData(categoryRes);
+      setProvinceData(provinceRes);
       setStatusData(statusRes);
       setTrendData(trendRes);
       setTopInfluencers(topRes);
@@ -112,6 +116,10 @@ const Dashboard = () => {
     } finally {
       setSavingSnapshot(false);
     }
+  };
+
+  const handleProvinceClick = (province) => {
+    navigate('/influencers', { state: { province } });
   };
 
   if (loading) {
@@ -238,6 +246,53 @@ const Dashboard = () => {
               </ResponsiveContainer>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Province Distribution */}
+      <div className="card" style={{ marginBottom: '24px' }}>
+        <div className="card-header">
+          <h3 className="card-title">地域分布</h3>
+          <span className="card-subtitle">点击省份可筛选对应达人</span>
+        </div>
+        <div className="card-body">
+          {provinceData.length === 0 ? (
+            <div className="empty-state" style={{ padding: '40px 0' }}>
+              <div className="empty-icon">📍</div>
+              <div className="empty-title">暂无地域数据</div>
+              <div className="empty-description">请为达人设置所在省份</div>
+            </div>
+          ) : (
+            <div style={{ height: `${Math.max(300, provinceData.length * 40)}px` }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart 
+                  data={provinceData} 
+                  layout="vertical"
+                  margin={{ left: 20, right: 30 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis type="number" />
+                  <YAxis 
+                    dataKey="province" 
+                    type="category" 
+                    width={70} 
+                    tick={{ fontSize: 12 }}
+                  />
+                  <Tooltip 
+                    formatter={(value) => [`${value} 人`, '达人数']}
+                    contentStyle={{ borderRadius: '8px', border: '1px solid var(--border-color)' }}
+                  />
+                  <Bar 
+                    dataKey="count" 
+                    fill="#1a73e8" 
+                    radius={[0, 4, 4, 0]}
+                    cursor="pointer"
+                    onClick={(data) => handleProvinceClick(data.province)}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
         </div>
       </div>
 

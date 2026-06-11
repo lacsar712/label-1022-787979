@@ -101,6 +101,25 @@ async def get_category_distribution(
     return [{"category": r.name, "count": r.count} for r in result]
 
 
+@router.get("/province-distribution", summary="获取地域分布")
+async def get_province_distribution(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """获取Influencer省份地域分布"""
+    result = db.query(
+        Influencer.province,
+        func.count(Influencer.id).label('count')
+    ).filter(
+        Influencer.province.isnot(None),
+        Influencer.province != ''
+    ).group_by(Influencer.province).order_by(
+        func.count(Influencer.id).desc()
+    ).all()
+    
+    return [{"province": r.province, "count": r.count} for r in result]
+
+
 @router.get("/collaboration-status", summary="获取合作状态分布")
 async def get_collaboration_status(
     db: Session = Depends(get_db),

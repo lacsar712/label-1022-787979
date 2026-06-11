@@ -83,6 +83,7 @@ def build_influencer_response(db: Session, influencer: Influencer) -> Influencer
         cost_per_post=influencer.cost_per_post,
         engagement_rate=influencer.engagement_rate,
         status=influencer.status,
+        province=influencer.province,
         notes=influencer.notes,
         created_at=influencer.created_at,
         updated_at=influencer.updated_at,
@@ -101,6 +102,7 @@ async def get_influencers(
     platform: Optional[str] = None,
     category_id: Optional[int] = None,
     status: Optional[str] = None,
+    province: Optional[str] = None,
     min_followers: Optional[int] = None,
     max_followers: Optional[int] = None,
     db: Session = Depends(get_db),
@@ -131,6 +133,9 @@ async def get_influencers(
     
     if status:
         query = query.filter(Influencer.status == status)
+    
+    if province:
+        query = query.filter(Influencer.province == province)
     
     if min_followers is not None:
         query = query.filter(Influencer.followers >= min_followers)
@@ -208,6 +213,50 @@ async def get_platforms(
         {"value": "其他", "label": "其他"}
     ]
     return platforms
+
+
+@router.get("/provinces", summary="获取省份列表")
+async def get_provinces(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """获取所有省份选项"""
+    provinces = [
+        {"value": "北京", "label": "北京"},
+        {"value": "上海", "label": "上海"},
+        {"value": "广东", "label": "广东"},
+        {"value": "江苏", "label": "江苏"},
+        {"value": "浙江", "label": "浙江"},
+        {"value": "山东", "label": "山东"},
+        {"value": "四川", "label": "四川"},
+        {"value": "河南", "label": "河南"},
+        {"value": "湖北", "label": "湖北"},
+        {"value": "湖南", "label": "湖南"},
+        {"value": "福建", "label": "福建"},
+        {"value": "陕西", "label": "陕西"},
+        {"value": "安徽", "label": "安徽"},
+        {"value": "辽宁", "label": "辽宁"},
+        {"value": "重庆", "label": "重庆"},
+        {"value": "天津", "label": "天津"},
+        {"value": "江西", "label": "江西"},
+        {"value": "广西", "label": "广西"},
+        {"value": "云南", "label": "云南"},
+        {"value": "山西", "label": "山西"},
+        {"value": "贵州", "label": "贵州"},
+        {"value": "黑龙江", "label": "黑龙江"},
+        {"value": "吉林", "label": "吉林"},
+        {"value": "甘肃", "label": "甘肃"},
+        {"value": "内蒙古", "label": "内蒙古"},
+        {"value": "新疆", "label": "新疆"},
+        {"value": "海南", "label": "海南"},
+        {"value": "宁夏", "label": "宁夏"},
+        {"value": "青海", "label": "青海"},
+        {"value": "西藏", "label": "西藏"},
+        {"value": "香港", "label": "香港"},
+        {"value": "澳门", "label": "澳门"},
+        {"value": "台湾", "label": "台湾"}
+    ]
+    return provinces
 
 
 @router.get("/{influencer_id}", response_model=InfluencerResponse, summary="获取Influencer详情")
