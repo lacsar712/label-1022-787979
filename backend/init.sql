@@ -158,6 +158,27 @@ CREATE TABLE IF NOT EXISTS collaboration_reviews (
     CONSTRAINT check_delivery_effect CHECK (delivery_effect >= 1 AND delivery_effect <= 5)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Tasks table - 合作项目待办清单
+CREATE TABLE IF NOT EXISTS tasks (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    collaboration_id INT NOT NULL,
+    title VARCHAR(200) NOT NULL,
+    assignee_id INT,
+    due_date DATE,
+    completed BOOLEAN DEFAULT FALSE,
+    sort_order INT DEFAULT 0,
+    created_by INT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_collaboration (collaboration_id),
+    INDEX idx_assignee (assignee_id),
+    INDEX idx_completed (completed),
+    INDEX idx_due_date (due_date),
+    FOREIGN KEY (collaboration_id) REFERENCES collaborations(id) ON DELETE CASCADE,
+    FOREIGN KEY (assignee_id) REFERENCES users(id),
+    FOREIGN KEY (created_by) REFERENCES users(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Insert initial roles
 INSERT INTO roles (id, name, description, permissions) VALUES
 (1, 'admin', '管理员', 'all'),

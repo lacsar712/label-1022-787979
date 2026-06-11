@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth, isAdmin, isOperator } from '../contexts/AuthContext';
+import { tasksApi } from '../api';
 
 const Layout = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [showDropdown, setShowDropdown] = useState(false);
+  const [overdueCount, setOverdueCount] = useState(0);
   const dropdownRef = useRef(null);
   
   // Close dropdown when clicking outside
@@ -26,6 +28,19 @@ const Layout = () => {
     };
   }, [showDropdown]);
 
+  useEffect(() => {
+    const fetchOverdueCount = async () => {
+      try {
+        const data = await tasksApi.getOverdueCount();
+        setOverdueCount(data.overdue_count);
+      } catch {
+      }
+    };
+    fetchOverdueCount();
+    const interval = setInterval(fetchOverdueCount, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
   const handleLogout = () => {
     logout();
     navigate('/login');
@@ -39,6 +54,7 @@ const Layout = () => {
     if (path.startsWith('/budgets')) return '季度预算规划';
     if (path.startsWith('/categories')) return '分类管理';
     if (path.startsWith('/users')) return '用户管理';
+    if (path.startsWith('/tasks')) return '我的任务';
     if (path.startsWith('/profile')) return '个人中心';
     return '';
   };
@@ -47,7 +63,8 @@ const Layout = () => {
     { 
       section: '概览',
       items: [
-        { path: '/dashboard', icon: '📊', label: '仪表盘', roles: ['admin', 'operator', 'user'] }
+        { path: '/dashboard', icon: '📊', label: '仪表盘', roles: ['admin', 'operator', 'user'] },
+        { path: '/tasks', icon: '📋', label: '我的任务', roles: ['admin', 'operator', 'user'] }
       ]
     },
     {
@@ -122,6 +139,17 @@ const Layout = () => {
             <h1 className="header-title">{getPageTitle()}</h1>
           </div>
           <div className="header-right">
+            <div
+              className="overdue-badge-wrapper"
+              onClick={() => navigate('/tasks')}
+              style={{ cursor: 'pointer' }}
+              title="查看逾期任务"
+            >
+              <span className="overdue-badge-icon">📋</span>
+              {overdueCount > 0 && (
+                <span className="overdue-badge">{overdueCount > 99 ? '99+' : overdueCount}</span>
+              )}
+            </div>
             <div className="dropdown" ref={dropdownRef}>
               <div 
                 className="user-menu"

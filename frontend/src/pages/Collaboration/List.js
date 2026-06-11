@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { collaborationsApi, influencersApi, budgetsApi, collaborationReviewsApi } from '../../api';
+import { collaborationsApi, influencersApi, budgetsApi, collaborationReviewsApi, tasksApi } from '../../api';
 import { useAuth, isOperator } from '../../contexts/AuthContext';
 import { showToast } from '../../components/Toast';
 import Modal from '../../components/Modal';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import Pagination from '../../components/Pagination';
 import ReviewModal from '../../components/ReviewModal';
+import TaskSidebar from '../../components/TaskSidebar';
 
 const CollaborationList = () => {
   const { user } = useAuth();
@@ -50,6 +51,11 @@ const CollaborationList = () => {
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviewingCollaboration, setReviewingCollaboration] = useState(null);
 
+  const [showTaskSidebar, setShowTaskSidebar] = useState(false);
+  const [taskSidebarCollabId, setTaskSidebarCollabId] = useState(null);
+  const [taskSidebarCollabName, setTaskSidebarCollabName] = useState('');
+  const [taskCounts, setTaskCounts] = useState({});
+
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
@@ -62,6 +68,22 @@ const CollaborationList = () => {
       const data = await collaborationsApi.getList(params);
       setCollaborations(data.items);
       setTotal(data.total);
+
+      if (data.items.length > 0) {
+        const countsPromises = data.items.map(async (collab) => {
+          try {
+            const taskRes = await tasksApi.getList({ collaboration_id: collab.id });
+            const incomplete = taskRes.items.filter(t => !t.completed).length;
+            return { id: collab.id, incomplete };
+          } catch {
+            return { id: collab.id, incomplete: 0 };
+          }
+        });
+        const countsResults = await Promise.all(countsPromises);
+        const countsMap = {};
+        countsResults.forEach(c => { countsMap[c.id] = c.incomplete; });
+        setTaskCounts(countsMap);
+      }
     } catch (error) {
       // Handled by interceptor
     } finally {
@@ -406,6 +428,18 @@ const CollaborationList = () => {
                     <tr key={item.id}>
                       <td>
                         <div style={{ fontWeight: '500' }}>{item.project_name}</div>
+                        {taskCounts[item.id] > 0 && (
+                          <span
+                            className="task-count-badge"
+                            onClick={() => {
+                              setTaskSidebarCollabId(item.id);
+                              setTaskSidebarCollabName(item.project_name);
+                              setShowTaskSidebar(true);
+                            }}
+                          >
+                            📋 {taskCounts[item.id]} 条待办
+                          </span>
+                        )}
                       </td>
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -432,6 +466,17 @@ const CollaborationList = () => {
                       <td>
                         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                           <button 
+                            className="btn btn-ghost btn-sm"
+                            onClick={() => {
+                              setTaskSidebarCollabId(item.id);
+                              setTaskSidebarCollabName(item.project_name);
+                              setShowTaskSidebar(true);
+                            }}
+                            style={{ color: 'var(--primary-color)' }}
+                          >
+                            📋 待办
+                          </button>
+                          <button
                             className="btn btn-ghost btn-sm"
                             onClick={() => openEditModal(item.id)}
                             disabled={!canEdit && user.id !== item.user_id}
@@ -710,6 +755,14 @@ const CollaborationList = () => {
         onClose={() => setShowReviewModal(false)}
         collaboration={reviewingCollaboration}
         onSuccess={handleReviewSuccess}
+      />
+
+      {/* Task Sidebar */}
+      <TaskSidebar
+        isOpen={showTaskSidebar}
+        onClose={() => setShowTaskSidebar(false)}
+        collaborationId={taskSidebarCollabId}
+        collaborationName={taskSidebarCollabName}
       />
     </div>
   );

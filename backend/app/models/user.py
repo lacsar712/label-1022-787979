@@ -38,3 +38,4 @@ class User(Base):
     role = relationship("Role", back_populates="users")
     collaborations = relationship("Collaboration", back_populates="creator")
     reviews = relationship("CollaborationReview", back_populates="reviewer")
+    assigned_tasks = relationship("Task", foreign_keys="Task.assignee_id", back_populates="assignee")

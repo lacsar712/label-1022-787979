@@ -199,6 +199,15 @@ export const statisticsApi = {
   getRecentCollaborations: (limit) => api.get('/statistics/recent-collaborations', { params: { limit } })
 };
 
+// Tasks API - 合作项目待办清单
+export const tasksApi = {
+  getList: (params) => api.get('/tasks', { params }),
+  getOverdueCount: () => api.get('/tasks/overdue-count'),
+  create: (data, collaborationId) => api.post('/tasks', data, { params: { collaboration_id: collaborationId } }),
+  update: (id, data) => api.put(`/tasks/${id}`, data),
+  delete: (id) => api.delete(`/tasks/${id}`)
+};
+
 // Snapshots API
 export const snapshotsApi = {
   getList: () => api.get('/snapshots'),

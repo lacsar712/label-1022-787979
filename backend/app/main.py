@@ -10,9 +10,8 @@ from contextlib import asynccontextmanager
 from .config import settings
 from .database import engine, Base
 from .utils.logger import logger, log_request
-from .routers import auth, users, profile, categories, influencers, collaborations, statistics, budgets, collaboration_reviews, snapshots
+from .routers import auth, users, profile, categories, influencers, collaborations, statistics, budgets, collaboration_reviews, snapshots, tasks
 
-# Import all models to ensure they are registered
 from .models.user import User, Role
 from .models.category import Category
 from .models.influencer import Influencer
@@ -20,6 +19,7 @@ from .models.collaboration import Collaboration
 from .models.collaboration_review import CollaborationReview
 from .models.budget import PlatformBudget
 from .models.snapshot import Snapshot
+from .models.task import Task
 
 
 @asynccontextmanager
@@ -89,6 +89,7 @@ app.include_router(collaboration_reviews.router)
 app.include_router(statistics.router)
 app.include_router(budgets.router)
 app.include_router(snapshots.router)
+app.include_router(tasks.router)
 
 
 @app.get("/", tags=["健康检查"])
