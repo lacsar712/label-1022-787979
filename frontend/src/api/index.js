@@ -197,4 +197,13 @@ export const statisticsApi = {
   getRecentCollaborations: (limit) => api.get('/statistics/recent-collaborations', { params: { limit } })
 };
 
+// Snapshots API
+export const snapshotsApi = {
+  getList: () => api.get('/snapshots'),
+  getById: (id) => api.get(`/snapshots/${id}`),
+  create: (data) => api.post('/snapshots', data),
+  delete: (id) => api.delete(`/snapshots/${id}`),
+  compare: (snapshotIdA, snapshotIdB) => api.post('/snapshots/compare', { snapshot_id_a: snapshotIdA, snapshot_id_b: snapshotIdB })
+};
+
 export default api;

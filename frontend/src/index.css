@@ -1601,3 +1601,92 @@ input, select, textarea {
   border-color: #bae6fd;
   color: #075985;
 }
+
+/* ===== Snapshot Create Modal ===== */
+.snapshot-create-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.snapshot-create-hint {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: 1.6;
+  padding: 12px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+}
+
+.snapshot-create-note {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  line-height: 1.5;
+}
+
+/* ===== Snapshot List Modal ===== */
+.snapshot-list-container {
+  min-height: 200px;
+}
+
+.snapshot-list-body {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.snapshot-list-section .table tbody tr.snapshot-row-selected {
+  background: var(--primary-light);
+}
+
+.snapshot-list-section .table tbody tr.snapshot-row-selected:hover {
+  background: #d4e4fc;
+}
+
+/* ===== Snapshot Compare ===== */
+.snapshot-compare-section {
+  border-top: 1px solid var(--border-color);
+  padding-top: 20px;
+}
+
+.snapshot-compare-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.snapshot-compare-title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.snapshot-compare-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.snapshot-compare-table-wrapper {
+  overflow-x: auto;
+}
+
+.snapshot-compare-table th {
+  font-size: var(--font-size-sm);
+  white-space: nowrap;
+}
+
+.snapshot-compare-table td {
+  font-size: var(--font-size-sm);
+  white-space: nowrap;
+}
+
+.snapshot-diff-up {
+  color: var(--error-color);
+  font-weight: 500;
+}
+
+.snapshot-diff-down {
+  color: var(--success-color);
+  font-weight: 500;
+}

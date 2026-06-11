@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { statisticsApi } from '../api';
+import { statisticsApi, snapshotsApi } from '../api';
+import SnapshotCreateModal from '../components/SnapshotCreateModal';
+import SnapshotListModal from '../components/SnapshotListModal';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
@@ -18,6 +20,9 @@ const Dashboard = () => {
   const [trendData, setTrendData] = useState([]);
   const [topInfluencers, setTopInfluencers] = useState([]);
   const [recentCollabs, setRecentCollabs] = useState([]);
+  const [showCreateSnapshot, setShowCreateSnapshot] = useState(false);
+  const [showSnapshotList, setShowSnapshotList] = useState(false);
+  const [savingSnapshot, setSavingSnapshot] = useState(false);
   
   const navigate = useNavigate();
 
@@ -96,6 +101,19 @@ const Dashboard = () => {
     return <span className={`tag ${config.class}`}>{config.label}</span>;
   };
 
+  const handleCreateSnapshot = async (name) => {
+    try {
+      setSavingSnapshot(true);
+      await snapshotsApi.create({ name });
+      window.dispatchEvent(new CustomEvent('show-toast', {
+        detail: { type: 'success', message: `快照「${name}」已创建` }
+      }));
+    } catch {
+    } finally {
+      setSavingSnapshot(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="loading">
@@ -106,6 +124,25 @@ const Dashboard = () => {
 
   return (
     <div>
+      <div className="page-header" style={{ marginBottom: '24px' }}>
+        <div></div>
+        <div className="page-actions">
+          <button
+            className="btn btn-secondary"
+            onClick={() => setShowSnapshotList(true)}
+          >
+            📷 快照列表
+          </button>
+          <button
+            className="btn btn-primary"
+            onClick={() => setShowCreateSnapshot(true)}
+            disabled={savingSnapshot}
+          >
+            {savingSnapshot ? '存档中...' : '📌 创建快照'}
+          </button>
+        </div>
+      </div>
+
       {/* Stats Cards */}
       <div className="stat-cards">
         <div className="stat-card">
@@ -395,6 +432,16 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+
+      <SnapshotCreateModal
+        isOpen={showCreateSnapshot}
+        onClose={() => setShowCreateSnapshot(false)}
+        onConfirm={handleCreateSnapshot}
+      />
+      <SnapshotListModal
+        isOpen={showSnapshotList}
+        onClose={() => setShowSnapshotList(false)}
+      />
     </div>
   );
 };
