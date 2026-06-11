@@ -144,7 +144,12 @@ export const influencersApi = {
   create: (data) => api.post('/influencers', data),
   update: (id, data) => api.put(`/influencers/${id}`, data),
   delete: (id) => api.delete(`/influencers/${id}`),
-  getPlatforms: () => api.get('/influencers/platforms')
+  getPlatforms: () => api.get('/influencers/platforms'),
+  getPlatformAccounts: (influencerId) => api.get(`/influencers/${influencerId}/platform-accounts`),
+  createPlatformAccount: (influencerId, data) => api.post(`/influencers/${influencerId}/platform-accounts`, data),
+  updatePlatformAccount: (influencerId, accountId, data) => api.put(`/influencers/${influencerId}/platform-accounts/${accountId}`, data),
+  setPrimaryPlatformAccount: (influencerId, accountId) => api.put(`/influencers/${influencerId}/platform-accounts/${accountId}/set-primary`),
+  deletePlatformAccount: (influencerId, accountId) => api.delete(`/influencers/${influencerId}/platform-accounts/${accountId}`)
 };
 
 // Collaborations API

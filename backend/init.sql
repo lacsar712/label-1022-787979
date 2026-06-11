@@ -73,6 +73,21 @@ CREATE TABLE IF NOT EXISTS influencers (
     FOREIGN KEY (category_id) REFERENCES categories(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Platform Accounts table - multi-platform account binding for influencers
+CREATE TABLE IF NOT EXISTS platform_accounts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    influencer_id INT NOT NULL,
+    platform VARCHAR(50) NOT NULL,
+    account_id VARCHAR(100),
+    followers INT DEFAULT 0,
+    is_primary BOOLEAN DEFAULT FALSE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_influencer (influencer_id),
+    INDEX idx_platform (platform),
+    FOREIGN KEY (influencer_id) REFERENCES influencers(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Collaborations table
 CREATE TABLE IF NOT EXISTS collaborations (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -151,3 +166,26 @@ INSERT INTO collaborations (influencer_id, user_id, project_name, status, start_
 (8, 1, '在线教育平台推广', 'completed', '2024-12-01', '2024-12-31', 30000.00, 30000.00, '长视频', 'B站发布学习方法分享视频，植入平台', 420000, 35000, 4200, 8500),
 (9, 2, '品牌春节活动', 'pending', '2025-02-05', '2025-02-15', 60000.00, 0.00, '短视频', '春节主题搞笑短视频，融入品牌元素', 0, 0, 0, 0),
 (1, 1, '护肤品牌年度代言', 'in_progress', '2025-01-01', '2025-06-30', 80000.00, 40000.00, '图文', '每月发布护肤日常和产品推荐', 320000, 25000, 3200, 5800);
+
+-- Insert sample platform accounts (migrate from influencers + add extras)
+INSERT INTO platform_accounts (influencer_id, platform, account_id, followers, is_primary) VALUES
+(1, '小红书', 'limeizhunag', 580000, TRUE),
+(1, '抖音', 'limeizhuang_dy', 320000, FALSE),
+(2, '抖音', 'fashionprince', 1200000, TRUE),
+(2, '小红书', 'fashionprince_xhs', 450000, FALSE),
+(2, 'Instagram', 'fashionprince_ig', 180000, FALSE),
+(3, 'B站', 'foodiexiaoming', 850000, TRUE),
+(3, '抖音', 'foodiexiaoming_dy', 560000, FALSE),
+(4, '微博', 'lifestylemei', 2500000, TRUE),
+(4, '小红书', 'lifestylemei_xhs', 620000, FALSE),
+(5, '抖音', 'techmaster', 980000, TRUE),
+(5, 'B站', 'techmaster_b', 720000, FALSE),
+(6, '小红书', 'hotmom', 420000, TRUE),
+(7, '快手', 'fitcoach', 680000, TRUE),
+(7, '抖音', 'fitcoach_dy', 390000, FALSE),
+(8, 'B站', 'knowledgeshare', 1500000, TRUE),
+(8, 'YouTube', 'knowledgeshare_yt', 520000, FALSE),
+(9, '抖音', 'funnyking', 3200000, TRUE),
+(9, '快手', 'funnyking_ks', 1800000, FALSE),
+(9, 'B站', 'funnyking_b', 950000, FALSE),
+(10, '微信', 'skinexpert', 280000, TRUE);

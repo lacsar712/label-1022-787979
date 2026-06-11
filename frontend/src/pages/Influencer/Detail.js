@@ -2,20 +2,43 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { influencersApi, collaborationsApi } from '../../api';
 import { useAuth, isOperator } from '../../contexts/AuthContext';
+import { showToast } from '../../components/Toast';
+import Modal from '../../components/Modal';
+import ConfirmDialog from '../../components/ConfirmDialog';
 
 const InfluencerDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const canEdit = isOperator(user);
-  
+
   const [loading, setLoading] = useState(true);
   const [influencer, setInfluencer] = useState(null);
   const [collaborations, setCollaborations] = useState([]);
+  const [platforms, setPlatforms] = useState([]);
+
+  const [showAccountModal, setShowAccountModal] = useState(false);
+  const [editingAccount, setEditingAccount] = useState(null);
+  const [accountForm, setAccountForm] = useState({ platform: '', account_id: '', followers: 0 });
+  const [accountFormErrors, setAccountFormErrors] = useState({});
+  const [savingAccount, setSavingAccount] = useState(false);
+
+  const [deleteAccountId, setDeleteAccountId] = useState(null);
+  const [deletingAccount, setDeletingAccount] = useState(false);
+
+  const [settingPrimaryId, setSettingPrimaryId] = useState(null);
 
   useEffect(() => {
     fetchData();
+    fetchPlatforms();
   }, [id]);
+
+  const fetchPlatforms = async () => {
+    try {
+      const data = await influencersApi.getPlatforms();
+      setPlatforms(data);
+    } catch (error) {}
+  };
 
   const fetchData = async () => {
     try {
@@ -27,7 +50,6 @@ const InfluencerDetail = () => {
       setInfluencer(infData);
       setCollaborations(collabData.items);
     } catch (error) {
-      // Handled by interceptor
       navigate('/influencers');
     } finally {
       setLoading(false);
@@ -66,6 +88,76 @@ const InfluencerDetail = () => {
     return <span className={`tag ${config.class}`}>{config.label}</span>;
   };
 
+  const openAddAccountModal = () => {
+    setEditingAccount(null);
+    setAccountForm({ platform: platforms[0]?.value || '抖音', account_id: '', followers: 0 });
+    setAccountFormErrors({});
+    setShowAccountModal(true);
+  };
+
+  const openEditAccountModal = (account) => {
+    setEditingAccount(account);
+    setAccountForm({
+      platform: account.platform,
+      account_id: account.account_id || '',
+      followers: account.followers || 0
+    });
+    setAccountFormErrors({});
+    setShowAccountModal(true);
+  };
+
+  const validateAccountForm = () => {
+    const errors = {};
+    if (!accountForm.platform) errors.platform = '请选择平台';
+    setAccountFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSaveAccount = async () => {
+    if (!validateAccountForm()) return;
+    try {
+      setSavingAccount(true);
+      const submitData = {
+        ...accountForm,
+        followers: parseInt(accountForm.followers) || 0
+      };
+      if (editingAccount) {
+        await influencersApi.updatePlatformAccount(id, editingAccount.id, submitData);
+        showToast('success', '账号更新成功');
+      } else {
+        await influencersApi.createPlatformAccount(id, submitData);
+        showToast('success', '账号添加成功');
+      }
+      setShowAccountModal(false);
+      fetchData();
+    } catch (error) {} finally {
+      setSavingAccount(false);
+    }
+  };
+
+  const handleSetPrimary = async (accountId) => {
+    try {
+      setSettingPrimaryId(accountId);
+      await influencersApi.setPrimaryPlatformAccount(id, accountId);
+      showToast('success', '已设为主展示账号');
+      fetchData();
+    } catch (error) {} finally {
+      setSettingPrimaryId(null);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      setDeletingAccount(true);
+      await influencersApi.deletePlatformAccount(id, deleteAccountId);
+      showToast('success', '账号已删除');
+      setDeleteAccountId(null);
+      fetchData();
+    } catch (error) {} finally {
+      setDeletingAccount(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="loading">
@@ -86,7 +178,6 @@ const InfluencerDetail = () => {
     );
   }
 
-  // Calculate statistics
   const totalCollabs = collaborations.length;
   const completedCollabs = collaborations.filter(c => c.status === 'completed').length;
   const totalBudget = collaborations.reduce((sum, c) => sum + (c.budget || 0), 0);
@@ -94,18 +185,19 @@ const InfluencerDetail = () => {
   const totalViews = collaborations.reduce((sum, c) => sum + (c.views || 0), 0);
   const totalLikes = collaborations.reduce((sum, c) => sum + (c.likes || 0), 0);
 
+  const platformAccounts = influencer.platform_accounts || [];
+  const primaryAccount = platformAccounts.find(a => a.is_primary) || platformAccounts[0];
+
   return (
     <div>
-      {/* Back Button */}
-      <button 
-        className="btn btn-ghost" 
+      <button
+        className="btn btn-ghost"
         onClick={() => navigate('/influencers')}
         style={{ marginBottom: '16px' }}
       >
         ← 返回列表
       </button>
 
-      {/* Profile Header */}
       <div className="detail-header">
         <div className="detail-avatar">
           {influencer.name?.[0]}
@@ -115,16 +207,18 @@ const InfluencerDetail = () => {
             <h1 className="detail-name" style={{ margin: 0 }}>{influencer.name}</h1>
             {getStatusTag(influencer.status)}
           </div>
-          
+
           <div className="detail-meta">
-            <div className="detail-meta-item">
-              <span>📱</span>
-              <span>{influencer.platform}</span>
-            </div>
-            {influencer.account_id && (
+            {primaryAccount && (
+              <div className="detail-meta-item">
+                <span>📱</span>
+                <span>{primaryAccount.platform}</span>
+              </div>
+            )}
+            {primaryAccount?.account_id && (
               <div className="detail-meta-item">
                 <span>@</span>
-                <span>{influencer.account_id}</span>
+                <span>{primaryAccount.account_id}</span>
               </div>
             )}
             {influencer.category && (
@@ -134,10 +228,10 @@ const InfluencerDetail = () => {
               </div>
             )}
           </div>
-          
+
           <div className="detail-stats">
             <div className="detail-stat">
-              <div className="detail-stat-value">{formatNumber(influencer.followers)}</div>
+              <div className="detail-stat-value">{formatNumber(primaryAccount?.followers || influencer.followers)}</div>
               <div className="detail-stat-label">粉丝数</div>
             </div>
             <div className="detail-stat">
@@ -156,9 +250,101 @@ const InfluencerDetail = () => {
         </div>
       </div>
 
-      {/* Info Cards */}
+      <div className="card" style={{ marginBottom: '24px' }}>
+        <div className="card-header">
+          <h3 className="card-title">平台账号管理</h3>
+          {canEdit && (
+            <button className="btn btn-primary btn-sm" onClick={openAddAccountModal}>
+              + 添加平台账号
+            </button>
+          )}
+        </div>
+        <div className="card-body" style={{ padding: 0 }}>
+          {platformAccounts.length === 0 ? (
+            <div className="empty-state" style={{ padding: '32px' }}>
+              <div className="empty-icon">📱</div>
+              <div className="empty-title">暂无平台账号</div>
+            </div>
+          ) : (
+            <div className="table-container">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th style={{ width: '60px' }}>主账号</th>
+                    <th>平台</th>
+                    <th>账号ID</th>
+                    <th>粉丝数</th>
+                    <th style={{ width: '180px' }}>操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {platformAccounts.map(account => (
+                    <tr key={account.id}>
+                      <td>
+                        {account.is_primary ? (
+                          <span
+                            title="主展示账号"
+                            style={{
+                              display: 'inline-block',
+                              padding: '2px 8px',
+                              borderRadius: '4px',
+                              background: 'var(--primary-color)',
+                              color: '#fff',
+                              fontSize: '12px',
+                              fontWeight: '500'
+                            }}
+                          >
+                            主账号
+                          </span>
+                        ) : (
+                          <span style={{ color: 'var(--text-tertiary)', fontSize: '12px' }}>-</span>
+                        )}
+                      </td>
+                      <td><span className="tag tag-primary">{account.platform}</span></td>
+                      <td>{account.account_id ? `@${account.account_id}` : '-'}</td>
+                      <td>{formatNumber(account.followers)}</td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                          {!account.is_primary && canEdit && (
+                            <button
+                              className="btn btn-ghost btn-sm"
+                              onClick={() => handleSetPrimary(account.id)}
+                              disabled={settingPrimaryId === account.id}
+                            >
+                              {settingPrimaryId === account.id ? '设置中...' : '设为主账号'}
+                            </button>
+                          )}
+                          {canEdit && (
+                            <>
+                              <button
+                                className="btn btn-ghost btn-sm"
+                                onClick={() => openEditAccountModal(account)}
+                              >
+                                编辑
+                              </button>
+                              {platformAccounts.length > 1 && (
+                                <button
+                                  className="btn btn-ghost btn-sm"
+                                  style={{ color: 'var(--error-color)' }}
+                                  onClick={() => setDeleteAccountId(account.id)}
+                                >
+                                  删除
+                                </button>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px', marginBottom: '24px' }}>
-        {/* Contact Info */}
         <div className="card">
           <div className="card-header">
             <h3 className="card-title">联系方式</h3>
@@ -189,7 +375,7 @@ const InfluencerDetail = () => {
                   <span>{influencer.contact_wechat}</span>
                 </div>
               )}
-              {!influencer.contact_name && !influencer.contact_phone && 
+              {!influencer.contact_name && !influencer.contact_phone &&
                !influencer.contact_email && !influencer.contact_wechat && (
                 <div style={{ color: 'var(--text-tertiary)', textAlign: 'center' }}>
                   暂无联系方式
@@ -199,7 +385,6 @@ const InfluencerDetail = () => {
           </div>
         </div>
 
-        {/* Collaboration Stats */}
         <div className="card">
           <div className="card-header">
             <h3 className="card-title">合作统计</h3>
@@ -235,7 +420,6 @@ const InfluencerDetail = () => {
         </div>
       </div>
 
-      {/* Tags */}
       {influencer.tags && (
         <div className="card" style={{ marginBottom: '24px' }}>
           <div className="card-header">
@@ -251,7 +435,6 @@ const InfluencerDetail = () => {
         </div>
       )}
 
-      {/* Notes */}
       {influencer.notes && (
         <div className="card" style={{ marginBottom: '24px' }}>
           <div className="card-header">
@@ -265,18 +448,17 @@ const InfluencerDetail = () => {
         </div>
       )}
 
-      {/* Collaboration History */}
       <div className="card">
         <div className="card-header">
           <h3 className="card-title">合作记录</h3>
           {canEdit && (
-            <button 
+            <button
               className="btn btn-primary btn-sm"
-              onClick={() => navigate('/collaborations', { 
-                state: { 
-                  openNewModal: true, 
-                  preSelectedInfluencer: influencer 
-                } 
+              onClick={() => navigate('/collaborations', {
+                state: {
+                  openNewModal: true,
+                  preSelectedInfluencer: influencer
+                }
               })}
             >
               + 新建合作
@@ -319,6 +501,62 @@ const InfluencerDetail = () => {
           )}
         </div>
       </div>
+
+      <Modal
+        isOpen={showAccountModal}
+        onClose={() => setShowAccountModal(false)}
+        title={editingAccount ? '编辑平台账号' : '添加平台账号'}
+        footer={
+          <>
+            <button className="btn btn-secondary" onClick={() => setShowAccountModal(false)}>取消</button>
+            <button className="btn btn-primary" onClick={handleSaveAccount} disabled={savingAccount}>
+              {savingAccount ? '保存中...' : '保存'}
+            </button>
+          </>
+        }
+      >
+        <div className="form-group">
+          <label className="form-label">平台 *</label>
+          <select
+            className="form-select"
+            value={accountForm.platform || ''}
+            onChange={(e) => setAccountForm({ ...accountForm, platform: e.target.value })}
+          >
+            {platforms.map(p => (
+              <option key={p.value} value={p.value}>{p.label}</option>
+            ))}
+          </select>
+          {accountFormErrors.platform && <div className="form-error">{accountFormErrors.platform}</div>}
+        </div>
+        <div className="form-group">
+          <label className="form-label">账号ID</label>
+          <input
+            type="text"
+            className="form-input"
+            value={accountForm.account_id || ''}
+            onChange={(e) => setAccountForm({ ...accountForm, account_id: e.target.value })}
+          />
+        </div>
+        <div className="form-group">
+          <label className="form-label">粉丝数</label>
+          <input
+            type="number"
+            className="form-input"
+            value={accountForm.followers || 0}
+            onChange={(e) => setAccountForm({ ...accountForm, followers: e.target.value })}
+          />
+        </div>
+      </Modal>
+
+      <ConfirmDialog
+        isOpen={!!deleteAccountId}
+        onClose={() => setDeleteAccountId(null)}
+        onConfirm={handleDeleteAccount}
+        title="删除确认"
+        message="确定要删除这个平台账号吗？此操作不可恢复。"
+        type="danger"
+        loading={deletingAccount}
+      />
     </div>
   );
 };

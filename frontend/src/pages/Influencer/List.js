@@ -338,7 +338,31 @@ const InfluencerList = () => {
                           </div>
                         </div>
                       </td>
-                      <td><span className="tag tag-primary">{inf.platform}</span></td>
+                      <td>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                          <span className="tag tag-primary">{inf.platform}</span>
+                          {inf.platform_account_count > 1 && (
+                            <span
+                              title={`共绑定 ${inf.platform_account_count} 个平台账号`}
+                              style={{
+                                display: 'inline-block',
+                                minWidth: '20px',
+                                height: '20px',
+                                padding: '0 6px',
+                                borderRadius: '10px',
+                                background: 'var(--primary-color)',
+                                color: '#fff',
+                                fontSize: '11px',
+                                fontWeight: '600',
+                                lineHeight: '20px',
+                                textAlign: 'center'
+                              }}
+                            >
+                              {inf.platform_account_count}
+                            </span>
+                          )}
+                        </div>
+                      </td>
                       <td>{formatNumber(inf.followers)}</td>
                       <td>{inf.category?.name || '-'}</td>
                       <td>¥{parseFloat(inf.cost_per_post).toLocaleString()}</td>

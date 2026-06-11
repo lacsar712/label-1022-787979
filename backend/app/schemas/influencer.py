@@ -6,6 +6,7 @@ from typing import Optional, List
 from datetime import datetime
 from decimal import Decimal
 import re
+from .platform_account import PlatformAccountResponse
 
 
 class InfluencerBase(BaseModel):
@@ -117,7 +118,9 @@ class InfluencerResponse(BaseModel):
     updated_at: Optional[datetime] = None
     category: Optional[CategoryBrief] = None
     collaboration_count: int = 0
-    
+    platform_accounts: List[PlatformAccountResponse] = []
+    platform_account_count: int = 0
+
     class Config:
         from_attributes = True
 
