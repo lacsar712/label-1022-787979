@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { collaborationsApi, influencersApi, budgetsApi, collaborationReviewsApi, tasksApi } from '../../api';
 import { useAuth, isOperator } from '../../contexts/AuthContext';
+import { useSettings } from '../../contexts/SettingsContext';
 import { showToast } from '../../components/Toast';
 import Modal from '../../components/Modal';
 import ConfirmDialog from '../../components/ConfirmDialog';
@@ -11,6 +12,7 @@ import TaskSidebar from '../../components/TaskSidebar';
 
 const CollaborationList = () => {
   const { user } = useAuth();
+  const { getDefaultPageSize, getPlatformDisplayName } = useSettings();
   const canEdit = isOperator(user);
   const location = useLocation();
   const navigate = useNavigate();
@@ -19,7 +21,7 @@ const CollaborationList = () => {
   const [collaborations, setCollaborations] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const [pageSize] = useState(10);
+  const pageSize = getDefaultPageSize();
   
   // Filters
   const [keyword, setKeyword] = useState('');

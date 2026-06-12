@@ -1,10 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useSettings } from '../contexts/SettingsContext';
 import { authApi } from '../api';
 import { showToast } from '../components/Toast';
 
 const Login = () => {
+  const { login } = useAuth();
+  const { publicSettings, loading: settingsLoading } = useSettings();
+  const navigate = useNavigate();
+
   const [isRegister, setIsRegister] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -15,9 +20,16 @@ const Login = () => {
     nickname: ''
   });
   const [errors, setErrors] = useState({});
-  
-  const { login } = useAuth();
-  const navigate = useNavigate();
+
+  const allowSelfRegister = publicSettings.allow_self_register !== false;
+  const platformName = publicSettings.platform_name || 'Influencer管理平台';
+
+  useEffect(() => {
+    if (!allowSelfRegister && isRegister) {
+      setIsRegister(false);
+      setErrors({});
+    }
+  }, [allowSelfRegister, isRegister]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -110,7 +122,7 @@ const Login = () => {
       <div className="login-container">
         <div className="login-header">
           <div className="login-logo">🎯</div>
-          <h1 className="login-title">Influencer管理平台</h1>
+          <h1 className="login-title">{platformName}</h1>
           <p className="login-subtitle">
             {isRegister ? '创建新账户' : '企业级网红资源管理系统'}
           </p>
@@ -214,16 +226,22 @@ const Login = () => {
               </a>
             </span>
           ) : (
-            <span>
-              还没有账户？
-              <a 
-                href="#" 
-                onClick={(e) => { e.preventDefault(); setIsRegister(true); setErrors({}); }}
-                style={{ marginLeft: '4px' }}
-              >
-                立即注册
-              </a>
-            </span>
+            allowSelfRegister ? (
+              <span>
+                还没有账户？
+                <a 
+                  href="#" 
+                  onClick={(e) => { e.preventDefault(); setIsRegister(true); setErrors({}); }}
+                  style={{ marginLeft: '4px' }}
+                >
+                  立即注册
+                </a>
+              </span>
+            ) : (
+              <span style={{ color: 'var(--text-secondary)' }}>
+                需要账户？请联系管理员创建
+              </span>
+            )
           )}
         </div>
 

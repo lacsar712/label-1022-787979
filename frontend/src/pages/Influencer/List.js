@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { influencersApi, categoriesApi } from '../../api';
 import { useAuth, isOperator } from '../../contexts/AuthContext';
+import { useSettings } from '../../contexts/SettingsContext';
 import { showToast } from '../../components/Toast';
 import Modal from '../../components/Modal';
 import ConfirmDialog from '../../components/ConfirmDialog';
@@ -9,6 +10,7 @@ import Pagination from '../../components/Pagination';
 
 const InfluencerList = () => {
   const { user } = useAuth();
+  const { getDefaultPageSize, getPlatformDisplayName } = useSettings();
   const navigate = useNavigate();
   const location = useLocation();
   const canEdit = isOperator(user);
@@ -17,7 +19,7 @@ const InfluencerList = () => {
   const [influencers, setInfluencers] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const [pageSize] = useState(10);
+  const pageSize = getDefaultPageSize();
   
   // Filters
   const [keyword, setKeyword] = useState('');

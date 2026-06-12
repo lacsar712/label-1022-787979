@@ -1,18 +1,22 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useSettings } from '../contexts/SettingsContext';
 import { tasksApi } from '../api';
 import OnboardingGuide from './OnboardingGuide';
 import { hasCompletedOnboarding } from '../utils/onboarding';
 
 const Layout = () => {
   const { user, logout } = useAuth();
+  const { publicSettings } = useSettings();
   const navigate = useNavigate();
   const location = useLocation();
   const [showDropdown, setShowDropdown] = useState(false);
   const [overdueCount, setOverdueCount] = useState(0);
   const [showGuide, setShowGuide] = useState(false);
   const dropdownRef = useRef(null);
+
+  const platformShortName = publicSettings.platform_short_name || 'Influencer平台';
   
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -79,6 +83,7 @@ const Layout = () => {
     if (path.startsWith('/categories')) return '分类管理';
     if (path.startsWith('/users')) return '用户管理';
     if (path.startsWith('/tasks')) return '我的任务';
+    if (path.startsWith('/settings')) return '系统设置';
     if (path.startsWith('/profile')) return '个人中心';
     return '';
   };
@@ -104,7 +109,8 @@ const Layout = () => {
     {
       section: '系统管理',
       items: [
-        { path: '/users', icon: '👥', label: '用户管理', roles: ['admin'], guideId: 'users' }
+        { path: '/users', icon: '👥', label: '用户管理', roles: ['admin'], guideId: 'users' },
+        { path: '/settings', icon: '⚙️', label: '系统设置', roles: ['admin'], guideId: 'settings' }
       ]
     }
   ];
@@ -126,7 +132,7 @@ const Layout = () => {
         <div className="sidebar-header">
           <div className="sidebar-logo">
             <div className="sidebar-logo-icon">🎯</div>
-            <span className="sidebar-logo-text">Influencer平台</span>
+            <span className="sidebar-logo-text">{platformShortName}</span>
           </div>
         </div>
 

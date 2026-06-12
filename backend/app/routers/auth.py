@@ -15,6 +15,7 @@ from ..utils.security import (
 )
 from ..utils.logger import logger
 from ..config import settings
+from .settings import get_setting_value
 
 router = APIRouter(prefix="/api/auth", tags=["认证"])
 
@@ -23,9 +24,17 @@ router = APIRouter(prefix="/api/auth", tags=["认证"])
 async def register(user_data: UserCreate, db: Session = Depends(get_db)):
     """
     用户注册
+    - 检查是否开放自助注册
     - 检查用户名是否已存在
     - 创建新用户，默认为普通用户角色
     """
+    allow_register = get_setting_value(db, "allow_self_register", True)
+    if not allow_register:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="系统未开放自助注册，请联系管理员"
+        )
+
     # Check if username exists
     existing_user = db.query(User).filter(User.username == user_data.username).first()
     if existing_user:

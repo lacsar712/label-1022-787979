@@ -221,4 +221,15 @@ export const recommendationsApi = {
   recommend: (data, limit = 20) => api.post('/recommendations', data, { params: { limit } })
 };
 
+// System Settings API - 系统设置管理
+export const settingsApi = {
+  getPublic: () => api.get('/settings/public'),
+  getAll: () => api.get('/settings'),
+  getByKey: (key) => api.get(`/settings/${key}`),
+  create: (data) => api.post('/settings', data),
+  update: (key, data) => api.put(`/settings/${key}`, data),
+  batchUpdate: (settings) => api.put('/settings', { settings }),
+  delete: (key) => api.delete(`/settings/${key}`)
+};
+
 export default api;

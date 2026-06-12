@@ -25,6 +25,7 @@ from ..schemas.platform_account import (
 )
 from ..utils.security import get_current_user, get_operator_or_admin, verify_password
 from ..utils.logger import logger
+from .settings import get_setting_value
 
 router = APIRouter(prefix="/api/influencers", tags=["Influencer管理"])
 
@@ -200,8 +201,8 @@ async def get_platforms(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """获取所有平台选项"""
-    platforms = [
+    """获取所有平台选项，显示名称从系统配置中读取"""
+    default_platforms = [
         {"value": "抖音", "label": "抖音"},
         {"value": "小红书", "label": "小红书"},
         {"value": "B站", "label": "B站"},
@@ -213,7 +214,14 @@ async def get_platforms(
         {"value": "TikTok", "label": "TikTok"},
         {"value": "其他", "label": "其他"}
     ]
-    return platforms
+    
+    display_names = get_setting_value(db, "platform_display_names", {})
+    if isinstance(display_names, dict):
+        for p in default_platforms:
+            if p["value"] in display_names:
+                p["label"] = display_names[p["value"]]
+    
+    return default_platforms
 
 
 @router.get("/provinces", summary="获取省份列表")

@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { usersApi } from '../../api';
+import { useSettings } from '../../contexts/SettingsContext';
 import { showToast } from '../../components/Toast';
 import Modal from '../../components/Modal';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import Pagination from '../../components/Pagination';
 
 const UserList = () => {
+  const { getDefaultPageSize } = useSettings();
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const [pageSize] = useState(10);
+  const pageSize = getDefaultPageSize();
   const [roles, setRoles] = useState([]);
   
   // Modal

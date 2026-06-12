@@ -8,9 +8,9 @@ from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 
 from .config import settings
-from .database import engine, Base
+from .database import engine, Base, SessionLocal
 from .utils.logger import logger, log_request
-from .routers import auth, users, profile, categories, influencers, collaborations, statistics, budgets, collaboration_reviews, snapshots, tasks, recommendations
+from .routers import auth, users, profile, categories, influencers, collaborations, statistics, budgets, collaboration_reviews, snapshots, tasks, recommendations, settings
 
 from .models.user import User, Role
 from .models.category import Category
@@ -20,6 +20,8 @@ from .models.collaboration_review import CollaborationReview
 from .models.budget import PlatformBudget
 from .models.snapshot import Snapshot
 from .models.task import Task
+from .models.system_setting import SystemSetting
+from .routers.settings import init_default_settings
 
 
 @asynccontextmanager
@@ -30,6 +32,14 @@ async def lifespan(app: FastAPI):
     # Create tables
     Base.metadata.create_all(bind=engine)
     logger.info("Database tables created/verified")
+    
+    # Initialize default system settings
+    db = SessionLocal()
+    try:
+        init_default_settings(db)
+        logger.info("Default system settings initialized")
+    finally:
+        db.close()
     
     yield
     
@@ -91,6 +101,7 @@ app.include_router(budgets.router)
 app.include_router(snapshots.router)
 app.include_router(tasks.router)
 app.include_router(recommendations.router)
+app.include_router(settings.router)
 
 
 @app.get("/", tags=["健康检查"])

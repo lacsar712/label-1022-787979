@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { SettingsProvider } from './contexts/SettingsContext';
 import Layout from './components/Layout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -12,6 +13,7 @@ import TaskPage from './pages/Task/List';
 import BudgetList from './pages/Budget/List';
 import CategoryList from './pages/Category/List';
 import UserList from './pages/User/List';
+import SystemSettings from './pages/Settings/Index';
 import Profile from './pages/Profile';
 import Toast from './components/Toast';
 
@@ -87,6 +89,11 @@ const AppRoutes = () => {
             <UserList />
           </ProtectedRoute>
         } />
+        <Route path="settings" element={
+          <ProtectedRoute roles={['admin']}>
+            <SystemSettings />
+          </ProtectedRoute>
+        } />
         <Route path="profile" element={<Profile />} />
       </Route>
       
@@ -121,8 +128,10 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AppRoutes />
-        <Toast toasts={toasts} onRemove={removeToast} />
+        <SettingsProvider>
+          <AppRoutes />
+          <Toast toasts={toasts} onRemove={removeToast} />
+        </SettingsProvider>
       </AuthProvider>
     </BrowserRouter>
   );
