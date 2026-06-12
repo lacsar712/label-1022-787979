@@ -53,6 +53,56 @@ docker compose logs -f
 | operator | 运营人员 | 管理Influencer和合作项目 |
 | user | 普通用户 | 仅查看 |
 
+## 命令参考
+
+项目根目录提供了 `Makefile`（Linux/macOS/WSL）和 `make.ps1`（Windows PowerShell）两套等价脚本，封装了常用操作。
+
+### 使用方式
+
+| 环境 | 命令 |
+|------|------|
+| Linux / macOS / WSL | `make <target>` |
+| Windows PowerShell | `.\make.ps1 <target>` |
+
+### 命令列表
+
+| 命令 | 用途 | 前置依赖 |
+|------|------|----------|
+| `help` | 显示所有可用命令及说明 | - |
+| `up` | 后台启动所有服务（db / backend / frontend） | Docker, Docker Compose |
+| `down` | 停止并移除所有服务容器 | Docker, Docker Compose |
+| `restart` | 重启所有服务 | Docker, Docker Compose |
+| `build` | 无缓存重新构建所有 Docker 镜像 | Docker, Docker Compose |
+| `rebuild` | 重新构建镜像并启动服务（等价于 up --build） | Docker, Docker Compose |
+| `seed-reset` | 重置数据库种子数据（删除数据卷后重新启动） | Docker, Docker Compose |
+| `test-backend` | 运行后端单元测试（pytest），首次会自动安装 pytest | Python 3.11+, 已激活虚拟环境 |
+| `build-frontend` | 本地构建前端生产环境静态包 | Node.js 18+, npm |
+| `logs` | 实时查看所有服务日志 | Docker, Docker Compose |
+| `ps` | 显示当前运行服务的状态 | Docker, Docker Compose |
+| `clean` | 停止服务并移除所有数据卷与镜像（深度清理） | Docker, Docker Compose |
+| `backend-dev` | 本地启动后端开发服务器（热重载） | Python 3.11+, 已安装依赖 |
+| `frontend-dev` | 本地启动前端开发服务器（热重载） | Node.js 18+, 已安装依赖 |
+| `backend-install` | 安装后端 Python 依赖到当前环境 | Python 3.11+, pip |
+| `frontend-install` | 安装前端 npm 依赖 | Node.js 18+, npm |
+
+### 示例
+
+```bash
+# Linux / macOS / WSL
+make up              # 启动所有服务
+make seed-reset      # 重置数据库到初始种子数据
+make build-frontend  # 构建前端产物
+make test-backend    # 运行后端测试
+```
+
+```powershell
+# Windows PowerShell
+.\make.ps1 up
+.\make.ps1 seed-reset
+.\make.ps1 build-frontend
+.\make.ps1 test-backend
+```
+
 ## 目录结构
 
 ```
@@ -72,6 +122,8 @@ docker compose logs -f
 │   │   └── pages/          # 页面组件
 │   ├── nginx.conf          # Nginx配置
 │   └── Dockerfile
+├── Makefile                # Linux/macOS/WSL 命令封装
+├── make.ps1                # Windows PowerShell 命令封装
 └── docker-compose.yml      # 容器编排
 ```
 
