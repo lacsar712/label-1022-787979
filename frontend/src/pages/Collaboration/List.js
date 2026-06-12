@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { collaborationsApi, influencersApi, budgetsApi, collaborationReviewsApi, tasksApi } from '../../api';
+import { collaborationsApi, influencersApi, budgetsApi, tasksApi } from '../../api';
 import { useAuth, isOperator } from '../../contexts/AuthContext';
 import { useSettings } from '../../contexts/SettingsContext';
 import { showToast } from '../../components/Toast';
@@ -12,7 +12,7 @@ import TaskSidebar from '../../components/TaskSidebar';
 
 const CollaborationList = () => {
   const { user } = useAuth();
-  const { getDefaultPageSize, getPlatformDisplayName } = useSettings();
+  const { getDefaultPageSize } = useSettings();
   const canEdit = isOperator(user);
   const location = useLocation();
   const navigate = useNavigate();
@@ -43,7 +43,7 @@ const CollaborationList = () => {
   
   // Budget Check
   const [budgetCheck, setBudgetCheck] = useState(null);
-  const [checkingBudget, setCheckingBudget] = useState(false);
+  const [, setCheckingBudget] = useState(false);
   
   // Delete
   const [deleteId, setDeleteId] = useState(null);
@@ -116,16 +116,6 @@ const CollaborationList = () => {
     fetchData();
   }, [fetchData]);
   
-  // Handle navigation state (from Influencer Detail page)
-  useEffect(() => {
-    if (location.state?.openNewModal && location.state?.preSelectedInfluencer) {
-      const inf = location.state.preSelectedInfluencer;
-      openCreateModalWithInfluencer(inf);
-      // Clear the state to prevent reopening on refresh
-      navigate(location.pathname, { replace: true });
-    }
-  }, [location.state]);
-
   const handleSearch = () => {
     setPage(1);
     fetchData();
@@ -190,7 +180,7 @@ const CollaborationList = () => {
   };
   
   // Open create modal with pre-selected influencer (from Influencer Detail page)
-  const openCreateModalWithInfluencer = (influencer) => {
+  const openCreateModalWithInfluencer = useCallback((influencer) => {
     setEditingId(null);
     const initialData = {
       influencer_id: influencer.id,
@@ -210,7 +200,16 @@ const CollaborationList = () => {
     setBudgetCheck(null);
     setShowModal(true);
     setTimeout(() => checkBudget(initialData), 100);
-  };
+  }, [checkBudget]);
+
+  // Handle navigation state (from Influencer Detail page)
+  useEffect(() => {
+    if (location.state?.openNewModal && location.state?.preSelectedInfluencer) {
+      const inf = location.state.preSelectedInfluencer;
+      openCreateModalWithInfluencer(inf);
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location.state, location.pathname, navigate, openCreateModalWithInfluencer]);
 
   const openEditModal = async (id) => {
     try {

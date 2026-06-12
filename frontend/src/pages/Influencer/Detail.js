@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { influencersApi, collaborationsApi, collaborationReviewsApi } from '../../api';
 import { useAuth, isOperator } from '../../contexts/AuthContext';
@@ -32,19 +32,7 @@ const InfluencerDetail = () => {
 
   const [settingPrimaryId, setSettingPrimaryId] = useState(null);
 
-  useEffect(() => {
-    fetchData();
-    fetchPlatforms();
-  }, [id]);
-
-  const fetchPlatforms = async () => {
-    try {
-      const data = await influencersApi.getPlatforms();
-      setPlatforms(data);
-    } catch (error) {}
-  };
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const [infData, collabData, reviewSummaryData, reviewsData] = await Promise.all([
@@ -62,7 +50,19 @@ const InfluencerDetail = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, navigate]);
+
+  const fetchPlatforms = useCallback(async () => {
+    try {
+      const data = await influencersApi.getPlatforms();
+      setPlatforms(data);
+    } catch (error) {}
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+    fetchPlatforms();
+  }, [fetchData, fetchPlatforms]);
 
   const formatNumber = (num) => {
     if (num >= 10000) {
@@ -188,7 +188,6 @@ const InfluencerDetail = () => {
 
   const totalCollabs = collaborations.length;
   const completedCollabs = collaborations.filter(c => c.status === 'completed').length;
-  const totalBudget = collaborations.reduce((sum, c) => sum + (c.budget || 0), 0);
   const totalCost = collaborations.reduce((sum, c) => sum + (c.actual_cost || 0), 0);
   const totalViews = collaborations.reduce((sum, c) => sum + (c.views || 0), 0);
   const totalLikes = collaborations.reduce((sum, c) => sum + (c.likes || 0), 0);

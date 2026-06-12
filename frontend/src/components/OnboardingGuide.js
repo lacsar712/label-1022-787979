@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { markOnboardingCompleted } from '../utils/onboarding';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -97,7 +97,6 @@ const OnboardingGuide = ({ isOpen, onClose }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [targetRect, setTargetRect] = useState(null);
   const [mounted, setMounted] = useState(false);
-  const animationRef = useRef(null);
 
   const updateTargetRect = useCallback(() => {
     const step = steps[currentStep];

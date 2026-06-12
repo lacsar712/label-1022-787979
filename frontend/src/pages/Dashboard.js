@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { statisticsApi, snapshotsApi } from '../api';
 import SnapshotCreateModal from '../components/SnapshotCreateModal';
@@ -6,7 +6,7 @@ import SnapshotListModal from '../components/SnapshotListModal';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
-  LineChart, Line, Area, AreaChart
+  Line, Area, AreaChart
 } from 'recharts';
 
 const COLORS = ['#1a73e8', '#34a853', '#fbbc04', '#ea4335', '#9333ea', '#f97316'];
@@ -15,7 +15,6 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [overview, setOverview] = useState(null);
   const [platformData, setPlatformData] = useState([]);
-  const [categoryData, setCategoryData] = useState([]);
   const [provinceData, setProvinceData] = useState([]);
   const [statusData, setStatusData] = useState([]);
   const [trendData, setTrendData] = useState([]);
@@ -27,15 +26,7 @@ const Dashboard = () => {
   
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // Small delay to ensure token is available after login navigation
-    const timer = setTimeout(() => {
-      fetchData();
-    }, 100);
-    return () => clearTimeout(timer);
-  }, []);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     // Check if token exists before making API calls
     const token = localStorage.getItem('token');
     if (!token) {
@@ -48,7 +39,6 @@ const Dashboard = () => {
       const [
         overviewRes,
         platformRes,
-        categoryRes,
         provinceRes,
         statusRes,
         trendRes,
@@ -57,7 +47,6 @@ const Dashboard = () => {
       ] = await Promise.all([
         statisticsApi.getOverview(),
         statisticsApi.getPlatformDistribution(),
-        statisticsApi.getCategoryDistribution(),
         statisticsApi.getProvinceDistribution(),
         statisticsApi.getCollaborationStatus(),
         statisticsApi.getMonthlyTrends(6),
@@ -67,7 +56,6 @@ const Dashboard = () => {
       
       setOverview(overviewRes);
       setPlatformData(platformRes);
-      setCategoryData(categoryRes);
       setProvinceData(provinceRes);
       setStatusData(statusRes);
       setTrendData(trendRes);
@@ -78,7 +66,14 @@ const Dashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchData();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [fetchData]);
 
   const formatNumber = (num) => {
     if (num >= 10000) {

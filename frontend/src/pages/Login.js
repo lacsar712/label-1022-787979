@@ -7,7 +7,7 @@ import { showToast } from '../components/Toast';
 
 const Login = () => {
   const { login } = useAuth();
-  const { publicSettings, loading: settingsLoading } = useSettings();
+  const { publicSettings } = useSettings();
   const navigate = useNavigate();
 
   const [isRegister, setIsRegister] = useState(false);
@@ -217,25 +217,25 @@ const Login = () => {
           {isRegister ? (
             <span>
               已有账户？
-              <a 
-                href="#" 
-                onClick={(e) => { e.preventDefault(); setIsRegister(false); setErrors({}); }}
-                style={{ marginLeft: '4px' }}
+              <button
+                type="button"
+                onClick={() => { setIsRegister(false); setErrors({}); }}
+                style={{ marginLeft: '4px', background: 'none', border: 'none', padding: 0, color: 'var(--primary-color)', cursor: 'pointer', font: 'inherit' }}
               >
                 立即登录
-              </a>
+              </button>
             </span>
           ) : (
             allowSelfRegister ? (
               <span>
                 还没有账户？
-                <a 
-                  href="#" 
-                  onClick={(e) => { e.preventDefault(); setIsRegister(true); setErrors({}); }}
-                  style={{ marginLeft: '4px' }}
+                <button
+                  type="button"
+                  onClick={() => { setIsRegister(true); setErrors({}); }}
+                  style={{ marginLeft: '4px', background: 'none', border: 'none', padding: 0, color: 'var(--primary-color)', cursor: 'pointer', font: 'inherit' }}
                 >
                   立即注册
-                </a>
+                </button>
               </span>
             ) : (
               <span style={{ color: 'var(--text-secondary)' }}>

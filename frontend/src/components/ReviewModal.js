@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Modal from './Modal';
 import StarRating from './StarRating';
 import { collaborationReviewsApi } from '../api';
@@ -14,13 +14,7 @@ const ReviewModal = ({ isOpen, onClose, collaboration, onSuccess }) => {
     comment: ''
   });
 
-  useEffect(() => {
-    if (isOpen && collaboration) {
-      fetchReview();
-    }
-  }, [isOpen, collaboration]);
-
-  const fetchReview = async () => {
+  const fetchReview = useCallback(async () => {
     try {
       setLoading(true);
       const data = await collaborationReviewsApi.getByCollaboration(collaboration.id);
@@ -42,7 +36,13 @@ const ReviewModal = ({ isOpen, onClose, collaboration, onSuccess }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [collaboration]);
+
+  useEffect(() => {
+    if (isOpen && collaboration) {
+      fetchReview();
+    }
+  }, [isOpen, collaboration, fetchReview]);
 
   const handleSubmit = async () => {
     try {

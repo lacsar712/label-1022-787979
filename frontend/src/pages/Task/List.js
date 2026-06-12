@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { tasksApi, collaborationsApi, usersApi } from '../../api';
 import { useAuth } from '../../contexts/AuthContext';
 import { showToast } from '../../components/Toast';
+import ConfirmDialog from '../../components/ConfirmDialog';
 import TaskSidebar from '../../components/TaskSidebar';
 
 const TaskPage = () => {
@@ -44,11 +45,6 @@ const TaskPage = () => {
   const getCollabName = (collabId) => {
     const collab = collaborations.find(c => c.id === collabId);
     return collab?.project_name || '未知项目';
-  };
-
-  const getUserName = (userId) => {
-    const u = users.find(u => u.id === userId);
-    return u?.nickname || u?.username || '未知';
   };
 
   const isOverdue = (task) => {
@@ -311,6 +307,16 @@ const TaskPage = () => {
         onClose={() => setSidebarOpen(false)}
         collaborationId={sidebarCollabId}
         collaborationName={sidebarCollabName}
+      />
+
+      <ConfirmDialog
+        isOpen={!!deleteId}
+        onClose={() => setDeleteId(null)}
+        onConfirm={handleDelete}
+        title="删除确认"
+        message="确定要删除这条任务吗？"
+        type="danger"
+        loading={deleting}
       />
     </div>
   );

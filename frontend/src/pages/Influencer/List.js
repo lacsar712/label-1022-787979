@@ -10,7 +10,7 @@ import Pagination from '../../components/Pagination';
 
 const InfluencerList = () => {
   const { user } = useAuth();
-  const { getDefaultPageSize, getPlatformDisplayName } = useSettings();
+  const { getDefaultPageSize } = useSettings();
   const navigate = useNavigate();
   const location = useLocation();
   const canEdit = isOperator(user);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { usersApi } from '../../api';
 import { useSettings } from '../../contexts/SettingsContext';
 import { showToast } from '../../components/Toast';
@@ -29,10 +29,6 @@ const UserList = () => {
     fetchRoles();
   }, []);
 
-  useEffect(() => {
-    fetchData();
-  }, [page]);
-
   const fetchRoles = async () => {
     try {
       const data = await usersApi.getRoles();
@@ -42,7 +38,7 @@ const UserList = () => {
     }
   };
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const data = await usersApi.getList({ page, page_size: pageSize });
@@ -53,7 +49,11 @@ const UserList = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, pageSize]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const openEditModal = (user) => {
     setEditingId(user.id);
@@ -100,11 +100,6 @@ const UserList = () => {
     } finally {
       setDeleting(false);
     }
-  };
-
-  const getRoleName = (roleId) => {
-    const role = roles.find(r => r.id === roleId);
-    return role ? role.name : roleId;
   };
 
   const getRoleLabel = (roleName) => {
