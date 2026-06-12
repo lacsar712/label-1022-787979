@@ -6,7 +6,12 @@ from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_
 from typing import List, Optional
 from datetime import date
-from ..database import get_db
+from ..dependencies import (
+    PaginationParams,
+    get_db,
+    get_current_user,
+    get_operator_or_admin,
+)
 from ..models.collaboration import Collaboration
 from ..models.influencer import Influencer
 from ..models.user import User
@@ -18,7 +23,7 @@ from ..schemas.collaboration import (
     CollaborationStatusUpdate
 )
 from ..schemas.user import SensitiveOperationRequest
-from ..utils.security import get_current_user, get_operator_or_admin, verify_password
+from ..utils.security import verify_password
 from ..utils.logger import logger
 
 router = APIRouter(prefix="/api/collaborations", tags=["合作管理"])
@@ -26,14 +31,13 @@ router = APIRouter(prefix="/api/collaborations", tags=["合作管理"])
 
 @router.get("", response_model=CollaborationListResponse, summary="获取合作列表")
 async def get_collaborations(
-    page: int = Query(1, ge=1),
-    page_size: int = Query(10, ge=1, le=100),
     keyword: Optional[str] = None,
     influencer_id: Optional[int] = None,
     status: Optional[str] = None,
     content_type: Optional[str] = None,
     start_date_from: Optional[date] = None,
     start_date_to: Optional[date] = None,
+    pagination: PaginationParams = Depends(),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -76,13 +80,13 @@ async def get_collaborations(
     total = query.count()
     
     # Apply pagination
-    collaborations = query.order_by(Collaboration.created_at.desc()).offset((page - 1) * page_size).limit(page_size).all()
+    collaborations = pagination.apply(query.order_by(Collaboration.created_at.desc())).all()
     
     return CollaborationListResponse(
         items=collaborations,
         total=total,
-        page=page,
-        page_size=page_size
+        page=pagination.page,
+        page_size=pagination.page_size
     )
 
 

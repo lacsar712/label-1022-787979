@@ -4,14 +4,13 @@ Authentication Router - Login, Register, Current User
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from datetime import timedelta
-from ..database import get_db
+from ..dependencies import get_db, get_current_user
 from ..models.user import User, Role
 from ..schemas.user import UserCreate, UserLogin, Token, UserResponse
 from ..utils.security import (
     verify_password, 
     get_password_hash, 
     create_access_token,
-    get_current_user
 )
 from ..utils.logger import logger
 from ..config import settings

@@ -6,12 +6,11 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, extract
 from datetime import datetime, timedelta
 from typing import Optional
-from ..database import get_db
+from ..dependencies import get_db, get_current_user
 from ..models.influencer import Influencer
 from ..models.collaboration import Collaboration
 from ..models.category import Category
 from ..models.user import User
-from ..utils.security import get_current_user
 from ..utils.logger import logger
 
 router = APIRouter(prefix="/api/statistics", tags=["数据统计"])

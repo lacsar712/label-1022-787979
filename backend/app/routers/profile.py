@@ -3,10 +3,10 @@ Profile Router - Personal Center
 """
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from ..database import get_db
+from ..dependencies import get_db, get_current_user
 from ..models.user import User
 from ..schemas.user import UserResponse, UserUpdate, PasswordChange
-from ..utils.security import get_current_user, get_password_hash, verify_password
+from ..utils.security import get_password_hash, verify_password
 from ..utils.logger import logger
 
 router = APIRouter(prefix="/api/profile", tags=["个人中心"])

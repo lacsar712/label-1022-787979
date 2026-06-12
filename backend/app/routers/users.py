@@ -4,7 +4,12 @@ Users Router - User Management
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from ..database import get_db
+from ..dependencies import (
+    PaginationParams,
+    get_db,
+    get_current_user,
+    get_admin_user,
+)
 from ..models.user import User, Role
 from ..schemas.user import (
     UserResponse, 
@@ -15,12 +20,7 @@ from ..schemas.user import (
     RoleResponse,
     SensitiveOperationRequest
 )
-from ..utils.security import (
-    get_current_user, 
-    get_admin_user, 
-    get_password_hash,
-    verify_password
-)
+from ..utils.security import get_password_hash, verify_password
 from ..utils.logger import logger
 
 router = APIRouter(prefix="/api/users", tags=["用户管理"])
@@ -28,11 +28,10 @@ router = APIRouter(prefix="/api/users", tags=["用户管理"])
 
 @router.get("", summary="获取用户列表")
 async def get_users(
-    page: int = Query(1, ge=1),
-    page_size: int = Query(10, ge=1, le=100),
     keyword: Optional[str] = None,
     role_id: Optional[int] = None,
     status: Optional[str] = None,
+    pagination: PaginationParams = Depends(),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_admin_user)
 ):
@@ -57,7 +56,7 @@ async def get_users(
         query = query.filter(User.status == status)
     
     total = query.count()
-    users = query.order_by(User.created_at.desc()).offset((page - 1) * page_size).limit(page_size).all()
+    users = pagination.apply(query.order_by(User.created_at.desc())).all()
     
     return {"items": users, "total": total}
 

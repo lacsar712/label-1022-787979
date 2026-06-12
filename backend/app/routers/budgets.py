@@ -8,7 +8,7 @@ from typing import List, Optional
 from datetime import date
 from decimal import Decimal
 
-from ..database import get_db
+from ..dependencies import get_db, get_current_user, get_operator_or_admin
 from ..models.budget import PlatformBudget
 from ..models.collaboration import Collaboration
 from ..models.influencer import Influencer
@@ -21,7 +21,6 @@ from ..schemas.budget import (
     BudgetCheckRequest,
     BudgetCheckResponse
 )
-from ..utils.security import get_current_user, get_operator_or_admin
 from ..utils.logger import logger
 
 router = APIRouter(prefix="/api/budgets", tags=["预算管理"])

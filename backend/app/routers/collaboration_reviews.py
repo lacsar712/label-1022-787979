@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func
 from typing import List
-from ..database import get_db
+from ..dependencies import get_db, get_current_user, get_operator_or_admin
 from ..models.collaboration import Collaboration
 from ..models.collaboration_review import CollaborationReview
 from ..models.user import User
@@ -15,7 +15,6 @@ from ..schemas.collaboration_review import (
     CollaborationReviewResponse,
     InfluencerReviewSummary
 )
-from ..utils.security import get_current_user, get_operator_or_admin
 from ..utils.logger import logger
 
 router = APIRouter(prefix="/api/collaboration-reviews", tags=["合作评价"])

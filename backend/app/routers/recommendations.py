@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func
 from typing import Optional
 from decimal import Decimal
-from ..database import get_db
+from ..dependencies import get_db, get_current_user
 from ..models.influencer import Influencer
 from ..models.collaboration import Collaboration
 from ..models.collaboration_review import CollaborationReview
@@ -15,7 +15,6 @@ from ..schemas.recommendation import (
     RecommendedInfluencer,
     MatchTag
 )
-from ..utils.security import get_current_user
 from ..utils.logger import logger
 
 router = APIRouter(prefix="/api/recommendations", tags=["达人推荐"])

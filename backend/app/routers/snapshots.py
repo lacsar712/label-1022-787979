@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List
 
-from ..database import get_db
+from ..dependencies import get_db, get_current_user, get_operator_or_admin
 from ..models.snapshot import Snapshot
 from ..models.influencer import Influencer
 from ..models.collaboration import Collaboration
@@ -20,7 +20,6 @@ from ..schemas.snapshot import (
     SnapshotCompareResponse,
     IndicatorDiff
 )
-from ..utils.security import get_current_user, get_operator_or_admin
 from ..utils.logger import logger
 
 router = APIRouter(prefix="/api/snapshots", tags=["经营快照"])

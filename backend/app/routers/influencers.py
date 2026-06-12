@@ -5,7 +5,12 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func, or_
 from typing import List, Optional
-from ..database import get_db
+from ..dependencies import (
+    PaginationParams,
+    get_db,
+    get_current_user,
+    get_operator_or_admin,
+)
 from ..models.influencer import Influencer
 from ..models.platform_account import PlatformAccount
 from ..models.category import Category
@@ -23,7 +28,7 @@ from ..schemas.platform_account import (
     PlatformAccountUpdate,
     PlatformAccountResponse
 )
-from ..utils.security import get_current_user, get_operator_or_admin, verify_password
+from ..utils.security import verify_password
 from ..utils.logger import logger
 from .settings import get_setting_value
 
@@ -98,8 +103,6 @@ def build_influencer_response(db: Session, influencer: Influencer) -> Influencer
 
 @router.get("", response_model=InfluencerListResponse, summary="获取Influencer列表")
 async def get_influencers(
-    page: int = Query(1, ge=1),
-    page_size: int = Query(10, ge=1, le=100),
     keyword: Optional[str] = None,
     platform: Optional[str] = None,
     category_id: Optional[int] = None,
@@ -107,6 +110,7 @@ async def get_influencers(
     province: Optional[str] = None,
     min_followers: Optional[int] = None,
     max_followers: Optional[int] = None,
+    pagination: PaginationParams = Depends(),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -148,15 +152,15 @@ async def get_influencers(
     # Get total count
     total = query.count()
     
-    influencers = query.order_by(Influencer.created_at.desc()).offset((page - 1) * page_size).limit(page_size).all()
+    influencers = pagination.apply(query.order_by(Influencer.created_at.desc())).all()
 
     items = [build_influencer_response(db, inf) for inf in influencers]
 
     return InfluencerListResponse(
         items=items,
         total=total,
-        page=page,
-        page_size=page_size
+        page=pagination.page,
+        page_size=pagination.page_size
     )
 
 

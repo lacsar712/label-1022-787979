@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session, joinedload
 from typing import Optional
 from datetime import date
-from ..database import get_db
+from ..dependencies import get_db, get_current_user, get_operator_or_admin
 from ..models.task import Task
 from ..models.collaboration import Collaboration
 from ..models.user import User
@@ -16,7 +16,6 @@ from ..schemas.task import (
     TaskListResponse,
     OverdueCountResponse
 )
-from ..utils.security import get_current_user, get_operator_or_admin
 from ..utils.logger import logger
 
 router = APIRouter(prefix="/api/tasks", tags=["任务管理"])

@@ -5,7 +5,7 @@ import json
 from typing import Dict, Any, List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from ..database import get_db
+from ..dependencies import get_db, get_current_user, get_admin_user
 from ..models.user import User
 from ..models.system_setting import SystemSetting
 from ..schemas.system_setting import (
@@ -15,7 +15,6 @@ from ..schemas.system_setting import (
     SystemSettingsBatchUpdate,
     PublicSettingsResponse
 )
-from ..utils.security import get_admin_user, get_current_user
 from ..utils.logger import logger
 
 router = APIRouter(prefix="/api/settings", tags=["系统设置"])

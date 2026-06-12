@@ -5,12 +5,11 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List, Optional
-from ..database import get_db
+from ..dependencies import get_db, get_current_user, get_operator_or_admin
 from ..models.category import Category
 from ..models.influencer import Influencer
 from ..models.user import User
 from ..schemas.category import CategoryCreate, CategoryUpdate, CategoryResponse
-from ..utils.security import get_current_user, get_operator_or_admin
 from ..utils.logger import logger
 
 router = APIRouter(prefix="/api/categories", tags=["分类管理"])
