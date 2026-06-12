@@ -12,7 +12,8 @@ from ..schemas.user import (
     UserRoleUpdate, 
     UserStatusUpdate,
     PasswordChange,
-    RoleResponse
+    RoleResponse,
+    SensitiveOperationRequest
 )
 from ..utils.security import (
     get_current_user, 
@@ -218,10 +219,12 @@ async def update_user_status(
 @router.delete("/{user_id}", summary="删除用户")
 async def delete_user(
     user_id: int,
+    confirm_data: SensitiveOperationRequest,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_admin_user)
 ):
-    """删除用户（管理员）"""
+    if not verify_password(confirm_data.password, current_user.password_hash):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="密码验证失败，请输入正确的登录密码")
     if current_user.id == user_id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

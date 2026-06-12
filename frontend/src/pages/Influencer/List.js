@@ -205,10 +205,10 @@ const InfluencerList = () => {
     }
   };
 
-  const handleDelete = async () => {
+  const handleDelete = async (password) => {
     try {
       setDeleting(true);
-      await influencersApi.delete(deleteId);
+      await influencersApi.delete(deleteId, password);
       showToast('success', '删除成功');
       setDeleteId(null);
       fetchData();
@@ -652,6 +652,7 @@ const InfluencerList = () => {
         message="确定要删除这个Influencer吗？此操作不可恢复。"
         type="danger"
         loading={deleting}
+        requirePassword={true}
       />
     </div>
   );

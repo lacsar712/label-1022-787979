@@ -288,10 +288,10 @@ const CollaborationList = () => {
     }
   };
 
-  const handleDelete = async () => {
+  const handleDelete = async (password) => {
     try {
       setDeleting(true);
-      await collaborationsApi.delete(deleteId);
+      await collaborationsApi.delete(deleteId, password);
       showToast('success', '删除成功');
       setDeleteId(null);
       fetchData();
@@ -747,6 +747,7 @@ const CollaborationList = () => {
         message="确定要删除这个合作记录吗？此操作不可恢复。"
         type="danger"
         loading={deleting}
+        requirePassword={true}
       />
 
       {/* Review Modal */}

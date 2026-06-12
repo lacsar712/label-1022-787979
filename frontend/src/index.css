@@ -1232,6 +1232,40 @@ input, select, textarea {
   font-size: var(--font-size-sm);
 }
 
+.confirm-password-section {
+  margin-top: var(--spacing-lg);
+  text-align: left;
+}
+
+.confirm-password-label {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.confirm-password-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  transition: all var(--transition-fast);
+}
+
+.confirm-password-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.confirm-password-input::placeholder {
+  color: var(--text-tertiary);
+}
+
 /* ===== Dropdown Menu ===== */
 .dropdown {
   position: relative;

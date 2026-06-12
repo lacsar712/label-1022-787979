@@ -17,12 +17,13 @@ from ..schemas.influencer import (
     InfluencerResponse,
     InfluencerListResponse
 )
+from ..schemas.user import SensitiveOperationRequest
 from ..schemas.platform_account import (
     PlatformAccountCreate,
     PlatformAccountUpdate,
     PlatformAccountResponse
 )
-from ..utils.security import get_current_user, get_operator_or_admin
+from ..utils.security import get_current_user, get_operator_or_admin, verify_password
 from ..utils.logger import logger
 
 router = APIRouter(prefix="/api/influencers", tags=["Influencer管理"])
@@ -321,10 +322,12 @@ async def update_influencer(
 @router.delete("/{influencer_id}", summary="删除Influencer")
 async def delete_influencer(
     influencer_id: int,
+    confirm_data: SensitiveOperationRequest,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_operator_or_admin)
 ):
-    """删除Influencer"""
+    if not verify_password(confirm_data.password, current_user.password_hash):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="密码验证失败，请输入正确的登录密码")
     influencer = db.query(Influencer).filter(Influencer.id == influencer_id).first()
     if not influencer:
         raise HTTPException(

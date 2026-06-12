@@ -86,10 +86,10 @@ const UserList = () => {
     }
   };
 
-  const handleDelete = async () => {
+  const handleDelete = async (password) => {
     try {
       setDeleting(true);
-      await usersApi.delete(deleteId);
+      await usersApi.delete(deleteId, password);
       showToast('success', '删除成功');
       setDeleteId(null);
       fetchData();
@@ -258,6 +258,7 @@ const UserList = () => {
         message="确定要删除这个用户吗？此操作不可恢复。"
         type="danger"
         loading={deleting}
+        requirePassword={true}
       />
     </div>
   );

@@ -117,7 +117,7 @@ export const usersApi = {
   update: (id, data) => api.put(`/users/${id}`, data),
   updateRole: (id, data) => api.put(`/users/${id}/role`, data),
   updateStatus: (id, data) => api.put(`/users/${id}/status`, data),
-  delete: (id) => api.delete(`/users/${id}`),
+  delete: (id, password) => api.delete(`/users/${id}`, { data: { password } }),
   getRoles: () => api.get('/users/roles')
 };
 
@@ -143,7 +143,7 @@ export const influencersApi = {
   getById: (id) => api.get(`/influencers/${id}`),
   create: (data) => api.post('/influencers', data),
   update: (id, data) => api.put(`/influencers/${id}`, data),
-  delete: (id) => api.delete(`/influencers/${id}`),
+  delete: (id, password) => api.delete(`/influencers/${id}`, { data: { password } }),
   getPlatforms: () => api.get('/influencers/platforms'),
   getProvinces: () => api.get('/influencers/provinces'),
   getPlatformAccounts: (influencerId) => api.get(`/influencers/${influencerId}/platform-accounts`),
@@ -160,7 +160,7 @@ export const collaborationsApi = {
   create: (data) => api.post('/collaborations', data),
   update: (id, data) => api.put(`/collaborations/${id}`, data),
   updateStatus: (id, data) => api.put(`/collaborations/${id}/status`, data),
-  delete: (id) => api.delete(`/collaborations/${id}`),
+  delete: (id, password) => api.delete(`/collaborations/${id}`, { data: { password } }),
   getStatuses: () => api.get('/collaborations/statuses'),
   getContentTypes: () => api.get('/collaborations/content-types')
 };

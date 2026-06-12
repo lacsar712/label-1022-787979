@@ -116,3 +116,7 @@ class UserRoleUpdate(BaseModel):
 
 class UserStatusUpdate(BaseModel):
     status: str = Field(..., pattern=r'^(active|inactive)$')
+
+
+class SensitiveOperationRequest(BaseModel):
+    password: str = Field(..., min_length=1, max_length=50)
