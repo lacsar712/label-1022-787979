@@ -2152,3 +2152,178 @@ input, select, textarea {
 .task-count-badge:hover {
   background: #d4e4fc;
 }
+
+/* ===== Recommendation Cards ===== */
+.rec-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 20px;
+}
+
+.rec-card {
+  display: flex;
+  gap: 16px;
+  padding: 20px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.rec-card:hover {
+  border-color: var(--primary-color);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.rec-card-rank {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 4px;
+  flex-shrink: 0;
+}
+
+.rec-rank-number {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rec-rank-top {
+  background: linear-gradient(135deg, var(--primary-color), #4fc3f7);
+  color: #fff;
+}
+
+.rec-card-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.rec-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.rec-card-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--primary-color), #4fc3f7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 600;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.rec-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.rec-card-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.rec-card-meta {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.rec-card-score {
+  text-align: center;
+  flex-shrink: 0;
+  padding: 6px 12px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+}
+
+.rec-score-value {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.rec-score-label {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-top: 2px;
+}
+
+.rec-card-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  padding: 12px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+}
+
+.rec-stat-item {
+  text-align: center;
+}
+
+.rec-stat-value {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.rec-stat-label {
+  display: block;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.rec-card-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.rec-card-action {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.rec-card-link {
+  font-size: 13px;
+  color: var(--primary-color);
+  font-weight: 500;
+  transition: color var(--transition-fast);
+}
+
+.rec-card:hover .rec-card-link {
+  color: var(--primary-hover);
+}
+
+@media (max-width: 768px) {
+  .rec-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .rec-card-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

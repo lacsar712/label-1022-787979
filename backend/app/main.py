@@ -10,7 +10,7 @@ from contextlib import asynccontextmanager
 from .config import settings
 from .database import engine, Base
 from .utils.logger import logger, log_request
-from .routers import auth, users, profile, categories, influencers, collaborations, statistics, budgets, collaboration_reviews, snapshots, tasks
+from .routers import auth, users, profile, categories, influencers, collaborations, statistics, budgets, collaboration_reviews, snapshots, tasks, recommendations
 
 from .models.user import User, Role
 from .models.category import Category
@@ -90,6 +90,7 @@ app.include_router(statistics.router)
 app.include_router(budgets.router)
 app.include_router(snapshots.router)
 app.include_router(tasks.router)
+app.include_router(recommendations.router)
 
 
 @app.get("/", tags=["健康检查"])

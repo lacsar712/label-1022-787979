@@ -217,4 +217,8 @@ export const snapshotsApi = {
   compare: (snapshotIdA, snapshotIdB) => api.post('/snapshots/compare', { snapshot_id_a: snapshotIdA, snapshot_id_b: snapshotIdB })
 };
 
+export const recommendationsApi = {
+  recommend: (data, limit = 20) => api.post('/recommendations', data, { params: { limit } })
+};
+
 export default api;
