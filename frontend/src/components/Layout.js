@@ -1,7 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth, isAdmin, isOperator } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import { tasksApi } from '../api';
+import OnboardingGuide from './OnboardingGuide';
+import { hasCompletedOnboarding } from '../utils/onboarding';
 
 const Layout = () => {
   const { user, logout } = useAuth();
@@ -9,6 +11,7 @@ const Layout = () => {
   const location = useLocation();
   const [showDropdown, setShowDropdown] = useState(false);
   const [overdueCount, setOverdueCount] = useState(0);
+  const [showGuide, setShowGuide] = useState(false);
   const dropdownRef = useRef(null);
   
   // Close dropdown when clicking outside
@@ -41,6 +44,26 @@ const Layout = () => {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    const checkOnboarding = () => {
+      if (!hasCompletedOnboarding()) {
+        setTimeout(() => setShowGuide(true), 500);
+      }
+    };
+
+    const timer = setTimeout(checkOnboarding, 800);
+
+    const handleRestartGuide = () => {
+      setShowGuide(true);
+    };
+    window.addEventListener('restart-onboarding', handleRestartGuide);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('restart-onboarding', handleRestartGuide);
+    };
+  }, []);
+
   const handleLogout = () => {
     logout();
     navigate('/login');
@@ -64,24 +87,24 @@ const Layout = () => {
     { 
       section: '概览',
       items: [
-        { path: '/dashboard', icon: '📊', label: '仪表盘', roles: ['admin', 'operator', 'user'] },
-        { path: '/tasks', icon: '📋', label: '我的任务', roles: ['admin', 'operator', 'user'] }
+        { path: '/dashboard', icon: '📊', label: '仪表盘', roles: ['admin', 'operator', 'user'], guideId: 'dashboard' },
+        { path: '/tasks', icon: '📋', label: '我的任务', roles: ['admin', 'operator', 'user'], guideId: 'tasks' }
       ]
     },
     {
       section: '业务管理',
       items: [
-        { path: '/influencers', icon: '👤', label: 'Influencer管理', roles: ['admin', 'operator', 'user'] },
-        { path: '/recommendations', icon: '🎯', label: '达人推荐', roles: ['admin', 'operator', 'user'] },
-        { path: '/collaborations', icon: '🤝', label: '合作管理', roles: ['admin', 'operator', 'user'] },
-        { path: '/budgets', icon: '💰', label: '季度预算规划', roles: ['admin', 'operator'] },
-        { path: '/categories', icon: '📁', label: '分类管理', roles: ['admin', 'operator'] }
+        { path: '/influencers', icon: '👤', label: 'Influencer管理', roles: ['admin', 'operator', 'user'], guideId: 'influencers' },
+        { path: '/recommendations', icon: '🎯', label: '达人推荐', roles: ['admin', 'operator', 'user'], guideId: 'recommendations' },
+        { path: '/collaborations', icon: '🤝', label: '合作管理', roles: ['admin', 'operator', 'user'], guideId: 'collaborations' },
+        { path: '/budgets', icon: '💰', label: '季度预算规划', roles: ['admin', 'operator'], guideId: 'budgets' },
+        { path: '/categories', icon: '📁', label: '分类管理', roles: ['admin', 'operator'], guideId: 'categories' }
       ]
     },
     {
       section: '系统管理',
       items: [
-        { path: '/users', icon: '👥', label: '用户管理', roles: ['admin'] }
+        { path: '/users', icon: '👥', label: '用户管理', roles: ['admin'], guideId: 'users' }
       ]
     }
   ];
@@ -122,6 +145,7 @@ const Layout = () => {
                   <NavLink
                     key={item.path}
                     to={item.path}
+                    data-guide-id={item.guideId}
                     className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
                   >
                     <span className="nav-item-icon">{item.icon}</span>
@@ -143,6 +167,7 @@ const Layout = () => {
           <div className="header-right">
             <div
               className="overdue-badge-wrapper"
+              data-guide-id="overdue-badge"
               onClick={() => navigate('/tasks')}
               style={{ cursor: 'pointer' }}
               title="查看逾期任务"
@@ -155,6 +180,7 @@ const Layout = () => {
             <div className="dropdown" ref={dropdownRef}>
               <div 
                 className="user-menu"
+                data-guide-id="user-menu"
                 onClick={() => setShowDropdown(!showDropdown)}
               >
                 <div className="user-avatar">
@@ -196,6 +222,11 @@ const Layout = () => {
           <Outlet />
         </div>
       </main>
+
+      <OnboardingGuide
+        isOpen={showGuide}
+        onClose={() => setShowGuide(false)}
+      />
     </div>
   );
 };

@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { profileApi, authApi } from '../api';
+import { useNavigate } from 'react-router-dom';
+import { profileApi } from '../api';
 import { useAuth } from '../contexts/AuthContext';
 import { showToast } from '../components/Toast';
+import { resetOnboarding } from '../utils/onboarding';
 
 const Profile = () => {
   const { updateUser } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('info');
   const [loading, setLoading] = useState(false);
   
@@ -104,6 +107,15 @@ const Profile = () => {
     }
   };
 
+  const handleRestartGuide = () => {
+    resetOnboarding();
+    showToast('success', '引导已重置，即将跳转到首页...');
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('restart-onboarding'));
+      navigate('/dashboard');
+    }, 1000);
+  };
+
   return (
     <div className="profile-container">
       {/* Header */}
@@ -134,6 +146,12 @@ const Profile = () => {
           onClick={() => setActiveTab('password')}
         >
           修改密码
+        </div>
+        <div 
+          className={`tab ${activeTab === 'guide' ? 'active' : ''}`}
+          onClick={() => setActiveTab('guide')}
+        >
+          帮助与引导
         </div>
       </div>
 
@@ -223,6 +241,40 @@ const Profile = () => {
                 </button>
               </div>
             </form>
+          ) : (
+            <div className="guide-section">
+              <div className="guide-card">
+                <div className="guide-card-icon">🎯</div>
+                <div className="guide-card-content">
+                  <h3 className="guide-card-title">功能操作引导</h3>
+                  <p className="guide-card-desc">
+                    重温平台核心功能的分步式操作引导，适合新入职同事熟悉系统，或久未使用的成员快速回忆操作流程。
+                  </p>
+                  <div className="guide-card-features">
+                    <div className="guide-feature-item">
+                      <span className="guide-feature-icon">📊</span>
+                      <span>侧边栏各功能菜单说明</span>
+                    </div>
+                    <div className="guide-feature-item">
+                      <span className="guide-feature-icon">📋</span>
+                      <span>逾期任务提醒与处理</span>
+                    </div>
+                    <div className="guide-feature-item">
+                      <span className="guide-feature-icon">👤</span>
+                      <span>个人中心与账号管理</span>
+                    </div>
+                  </div>
+                  <button 
+                    type="button" 
+                    className="btn btn-primary"
+                    onClick={handleRestartGuide}
+                    style={{ marginTop: '16px' }}
+                  >
+                    🔄 重新查看引导
+                  </button>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       </div>
