@@ -158,7 +158,7 @@ const Profile = () => {
       {/* Content */}
       <div className="card">
         <div className="card-body">
-          {activeTab === 'info' ? (
+          {activeTab === 'info' && (
             <form onSubmit={handleProfileSubmit}>
               <div className="form-group">
                 <label className="form-label">昵称</label>
@@ -198,7 +198,8 @@ const Profile = () => {
                 </button>
               </div>
             </form>
-          ) : (
+          )}
+          {activeTab === 'password' && (
             <form onSubmit={handlePasswordSubmit}>
               <div className="form-group">
                 <label className="form-label">当前密码</label>
@@ -241,7 +242,8 @@ const Profile = () => {
                 </button>
               </div>
             </form>
-          ) : (
+          )}
+          {activeTab === 'guide' && (
             <div className="guide-section">
               <div className="guide-card">
                 <div className="guide-card-icon">🎯</div>
